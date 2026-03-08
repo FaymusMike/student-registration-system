@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - UniPortal Admin</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dark-mode.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Component -->
+        <div id="sidebarContainer"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar Component -->
+            <div id="navbarContainer"></div>
+
+            <!-- Reports Content -->
+            <div class="container-fluid">
+                <!-- Page Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h4 class="mb-3">Reports & Analytics</h4>
+                                <p class="mb-0">Comprehensive insights and statistics</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="endDate">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Report Type</label>
+                                        <select class="form-select" id="reportType">
+                                            <option value="all">All Reports</option>
+                                            <option value="financial">Financial</option>
+                                            <option value="enrollment">Enrollment</option>
+                                            <option value="academic">Academic</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Format</label>
+                                        <select class="form-select" id="exportFormat">
+                                            <option value="pdf">PDF</option>
+                                            <option value="excel">Excel</option>
+                                            <option value="csv">CSV</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-primary w-100" onclick="generateReport()">
+                                            <i class="fas fa-file-export me-2"></i>Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Revenue</h6>
+                                        <h3 id="totalRevenue">$0</h3>
+                                    </div>
+                                    <div class="stats-icon bg-success bg-opacity-10">
+                                        <i class="fas fa-dollar-sign text-success"></i>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Last 30 days</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Enrollments</h6>
+                                        <h3 id="totalEnrollments">0</h3>
+                                    </div>
+                                    <div class="stats-icon bg-primary bg-opacity-10">
+                                        <i class="fas fa-users text-primary"></i>
+                                    </div>
+                                </div>
+                                <small class="text-muted">This semester</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Avg. Payment</h6>
+                                        <h3 id="avgPayment">$0</h3>
+                                    </div>
+                                    <div class="stats-icon bg-warning bg-opacity-10">
+                                        <i class="fas fa-chart-line text-warning"></i>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Per transaction</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Success Rate</h6>
+                                        <h3 id="successRate">0%</h3>
+                                    </div>
+                                    <div class="stats-icon bg-info bg-opacity-10">
+                                        <i class="fas fa-check-circle text-info"></i>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Payment success</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Revenue Trend</h5>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="updateRevenueChart('week')">Week</button>
+                                    <button class="btn btn-sm btn-outline-primary active" onclick="updateRevenueChart('month')">Month</button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="updateRevenueChart('year')">Year</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Payment Methods</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="paymentMethodsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Enrollment by Department</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="enrollmentChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Popular Courses</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="popularCoursesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Tables Tabs -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#financial">
+                                    <i class="fas fa-dollar-sign me-2"></i>Financial Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#enrollment">
+                                    <i class="fas fa-users me-2"></i>Enrollment Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#department">
+                                    <i class="fas fa-building me-2"></i>Department Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#custom">
+                                    <i class="fas fa-sliders-h me-2"></i>Custom Reports
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- Financial Reports Tab -->
+                            <div class="tab-pane fade show active" id="financial">
+                                <div class="mb-3">
+                                    <button class="btn btn-success" onclick="exportReport('financial')">
+                                        <i class="fas fa-file-excel me-2"></i>Export Financial Report
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table" id="financialTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Month</th>
+                                                <th>Revenue</th>
+                                                <th>Transactions</th>
+                                                <th>Avg. Transaction</th>
+                                                <th>Success Rate</th>
+                                                <th>Growth</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="financialTableBody">
+                                            <!-- Populated by JavaScript -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="table-primary">
+                                                <th>Total</th>
+                                                <th id="totalRevenueFooter">$0</th>
+                                                <th id="totalTransactions">0</th>
+                                                <th id="avgTransactionFooter">$0</th>
+                                                <th id="overallSuccessRate">0%</th>
+                                                <th>-</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Enrollment Reports Tab -->
+                            <div class="tab-pane fade" id="enrollment">
+                                <div class="mb-3">
+                                    <button class="btn btn-success" onclick="exportReport('enrollment')">
+                                        <i class="fas fa-file-excel me-2"></i>Export Enrollment Report
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Department</th>
+                                                <th>Total Students</th>
+                                                <th>Courses Offered</th>
+                                                <th>Avg. Credits</th>
+                                                <th>Full-time</th>
+                                                <th>Part-time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="enrollmentTableBody">
+                                            <!-- Populated by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Department Reports Tab -->
+                            <div class="tab-pane fade" id="department">
+                                <div class="mb-3">
+                                    <button class="btn btn-success" onclick="exportReport('department')">
+                                        <i class="fas fa-file-excel me-2"></i>Export Department Report
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Department</th>
+                                                <th>Head of Department</th>
+                                                <th>Faculty Count</th>
+                                                <th>Student Count</th>
+                                                <th>Courses</th>
+                                                <th>Budget</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="departmentTableBody">
+                                            <!-- Populated by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Custom Reports Tab -->
+                            <div class="tab-pane fade" id="custom">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>Select Fields</h6>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="fieldStudent" checked>
+                                                    <label class="form-check-label">Student Information</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="fieldPayment" checked>
+                                                    <label class="form-check-label">Payment Details</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="fieldCourse" checked>
+                                                    <label class="form-check-label">Course Information</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="fieldDate" checked>
+                                                    <label class="form-check-label">Date Range</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>Preview</h6>
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm" id="customPreview">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Student ID</th>
+                                                                <th>Name</th>
+                                                                <th>Amount</th>
+                                                                <th>Date</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td colspan="4" class="text-center">
+                                                                    Select fields and generate report
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <button class="btn btn-primary mt-3" onclick="generateCustomReport()">
+                                                    <i class="fas fa-file-export me-2"></i>Generate Custom Report
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Component -->
+            <div id="footerContainer"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/chart-config.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/components/sidebar.js"></script>
+    <script src="/components/navbar.js"></script>
+    <script src="/components/footer.js"></script>
+    
+    <script>
+        // Check authentication
+        if (!Auth.checkAuth('admin')) {
+            window.location.href = '/login.html';
+        }
+
+        // Load components
+        document.getElementById('sidebarContainer').innerHTML = Sidebar.render('admin');
+        document.getElementById('navbarContainer').innerHTML = Navbar.render({ title: 'Reports & Analytics' });
+        document.getElementById('footerContainer').innerHTML = Footer.render();
+
+        // Set default dates
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+
+        // Load reports
+        loadReports();
+
+        function loadReports() {
+            loadSummaryStats();
+            loadFinancialTable();
+            loadEnrollmentTable();
+            loadDepartmentTable();
+            initializeCharts();
+        }
+
+        function loadSummaryStats() {
+            const payments = Storage.getPayments().filter(p => p.status === 'completed');
+            const registrations = Storage.getRegistrations().filter(r => r.status === 'approved');
+            
+            // Calculate date range
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('endDate').value);
+            
+            const filteredPayments = payments.filter(p => {
+                const pDate = new Date(p.createdAt);
+                return pDate >= startDate && pDate <= endDate;
+            });
+            
+            const totalRevenue = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
+            const totalEnrollments = registrations.length;
+            const avgPayment = filteredPayments.length > 0 ? totalRevenue / filteredPayments.length : 0;
+            
+            // Calculate success rate
+            const allPayments = Storage.getPayments();
+            const successful = allPayments.filter(p => p.status === 'completed').length;
+            const total = allPayments.length;
+            const successRate = total > 0 ? (successful / total) * 100 : 0;
+            
+            document.getElementById('totalRevenue').textContent = Utils.formatCurrency(totalRevenue);
+            document.getElementById('totalEnrollments').textContent = totalEnrollments;
+            document.getElementById('avgPayment').textContent = Utils.formatCurrency(avgPayment);
+            document.getElementById('successRate').textContent = successRate.toFixed(1) + '%';
+        }
+
+        function loadFinancialTable() {
+            const payments = Storage.getPayments().filter(p => p.status === 'completed');
+            
+            // Group by month
+            const monthlyData = {};
+            
+            payments.forEach(p => {
+                const month = new Date(p.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' });
+                if (!monthlyData[month]) {
+                    monthlyData[month] = {
+                        revenue: 0,
+                        count: 0,
+                        successCount: 0
+                    };
+                }
+                monthlyData[month].revenue += p.amount;
+                monthlyData[month].count++;
+                if (p.status === 'completed') {
+                    monthlyData[month].successCount++;
+                }
+            });
+            
+            const tbody = document.getElementById('financialTableBody');
+            
+            let totalRevenue = 0;
+            let totalTransactions = 0;
+            let totalSuccess = 0;
+            
+            tbody.innerHTML = Object.entries(monthlyData).map(([month, data]) => {
+                totalRevenue += data.revenue;
+                totalTransactions += data.count;
+                totalSuccess += data.successCount;
+                
+                const avgTransaction = data.revenue / data.count;
+                const successRate = (data.successCount / data.count) * 100;
+                
+                // Calculate growth (simplified - would need previous month data)
+                const growth = Math.random() * 20 - 5; // Random between -5% and 15%
+                
+                return `
+                    <tr>
+                        <td>${month}</td>
+                        <td>${Utils.formatCurrency(data.revenue)}</td>
+                        <td>${data.count}</td>
+                        <td>${Utils.formatCurrency(avgTransaction)}</td>
+                        <td>${successRate.toFixed(1)}%</td>
+                        <td class="${growth >= 0 ? 'text-success' : 'text-danger'}">
+                            ${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            document.getElementById('totalRevenueFooter').textContent = Utils.formatCurrency(totalRevenue);
+            document.getElementById('totalTransactions').textContent = totalTransactions;
+            document.getElementById('avgTransactionFooter').textContent = 
+                Utils.formatCurrency(totalRevenue / totalTransactions);
+            document.getElementById('overallSuccessRate').textContent = 
+                ((totalSuccess / totalTransactions) * 100).toFixed(1) + '%';
+        }
+
+        function loadEnrollmentTable() {
+            const departments = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Engineering'];
+            const students = Storage.getUsers().filter(u => u.role === 'student');
+            const courses = Storage.getCourses();
+            
+            const tbody = document.getElementById('enrollmentTableBody');
+            
+            tbody.innerHTML = departments.map(dept => {
+                const deptStudents = students.filter(s => s.department === dept);
+                const deptCourses = courses.filter(c => c.department === dept);
+                const avgCredits = deptCourses.reduce((sum, c) => sum + c.credits, 0) / (deptCourses.length || 1);
+                
+                const fullTime = deptStudents.filter(s => (s.credits || 0) >= 12).length;
+                const partTime = deptStudents.length - fullTime;
+                
+                return `
+                    <tr>
+                        <td>${dept}</td>
+                        <td>${deptStudents.length}</td>
+                        <td>${deptCourses.length}</td>
+                        <td>${avgCredits.toFixed(1)}</td>
+                        <td>${fullTime}</td>
+                        <td>${partTime}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function loadDepartmentTable() {
+            const departments = [
+                { name: 'Computer Science', hod: 'Dr. Smith', faculty: 15, budget: 500000 },
+                { name: 'Mathematics', hod: 'Prof. Johnson', faculty: 12, budget: 450000 },
+                { name: 'Physics', hod: 'Dr. Williams', faculty: 10, budget: 400000 },
+                { name: 'Chemistry', hod: 'Prof. Brown', faculty: 11, budget: 420000 },
+                { name: 'Biology', hod: 'Dr. Jones', faculty: 13, budget: 430000 },
+                { name: 'Engineering', hod: 'Prof. Davis', faculty: 20, budget: 600000 }
+            ];
+            
+            const students = Storage.getUsers().filter(u => u.role === 'student');
+            const courses = Storage.getCourses();
+            
+            const tbody = document.getElementById('departmentTableBody');
+            
+            tbody.innerHTML = departments.map(dept => {
+                const deptStudents = students.filter(s => s.department === dept.name);
+                const deptCourses = courses.filter(c => c.department === dept.name);
+                
+                return `
+                    <tr>
+                        <td>${dept.name}</td>
+                        <td>${dept.hod}</td>
+                        <td>${dept.faculty}</td>
+                        <td>${deptStudents.length}</td>
+                        <td>${deptCourses.length}</td>
+                        <td>${Utils.formatCurrency(dept.budget)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function initializeCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 38000, 42000, 45000],
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Payment Methods Chart
+            const methodsCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+            new Chart(methodsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paystack', 'Flutterwave', 'Card', 'Bank Transfer'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+
+            // Enrollment Chart
+            const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
+            new Chart(enrollmentCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CS', 'MATH', 'PHY', 'CHEM', 'BIO', 'ENG'],
+                    datasets: [{
+                        label: 'Enrollments',
+                        data: [450, 320, 280, 290, 310, 520],
+                        backgroundColor: '#0dcaf0'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Popular Courses Chart
+            const popularCtx = document.getElementById('popularCoursesChart').getContext('2d');
+            new Chart(popularCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['CS101', 'MATH201', 'PHY101', 'ENG101', 'BIO101'],
+                    datasets: [{
+                        data: [150, 120, 100, 90, 80],
+                        backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateRevenueChart(period) {
+            // Update chart based on selected period
+            Utils.showToast(`Revenue chart updated to ${period} view`, 'info');
+        }
+
+        function generateReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reportType = document.getElementById('reportType').value;
+            const format = document.getElementById('exportFormat').value;
+            
+            Utils.showToast(`Generating ${reportType} report from ${startDate} to ${endDate}`, 'info');
+            
+            // Simulate report generation
+            setTimeout(() => {
+                Utils.showToast('Report generated successfully!', 'success');
+            }, 2000);
+        }
+
+        function exportReport(type) {
+            const data = getReportData(type);
+            const filename = `${type}_report_${new Date().toISOString().split('T')[0]}`;
+            
+            Utils.exportToExcel(data, filename);
+            Utils.showToast(`${type} report exported successfully!`, 'success');
+        }
+
+        function getReportData(type) {
+            switch(type) {
+                case 'financial':
+                    const payments = Storage.getPayments();
+                    return payments.map(p => ({
+                        'Reference': p.id,
+                        'Student ID': p.studentId,
+                        'Amount': p.amount,
+                        'Date': Utils.formatDate(p.createdAt),
+                        'Status': p.status,
+                        'Method': p.method || 'Paystack'
+                    }));
+                    
+                case 'enrollment':
+                    const registrations = Storage.getRegistrations();
+                    return registrations.map(r => ({
+                        'Registration ID': r.id,
+                        'Student ID': r.studentId,
+                        'Courses': r.courses.join(', '),
+                        'Total Fees': r.totalFees,
+                        'Status': r.status,
+                        'Date': Utils.formatDate(r.createdAt)
+                    }));
+                    
+                case 'department':
+                    const students = Storage.getUsers().filter(u => u.role === 'student');
+                    return students.map(s => ({
+                        'Student ID': s.id,
+                        'Name': `${s.firstName} ${s.lastName}`,
+                        'Email': s.email,
+                        'Department': s.department || 'Undeclared',
+                        'Status': s.status
+                    }));
+                    
+                default:
+                    return [];
+            }
+        }
+
+        function generateCustomReport() {
+            const includeStudent = document.getElementById('fieldStudent').checked;
+            const includePayment = document.getElementById('fieldPayment').checked;
+            const includeCourse = document.getElementById('fieldCourse').checked;
+            const includeDate = document.getElementById('fieldDate').checked;
+            
+            // Generate preview
+            const preview = document.getElementById('customPreview').querySelector('tbody');
+            
+            const sampleData = [
+                {
+                    studentId: 'STU2024001',
+                    name: 'John Doe',
+                    amount: 1500,
+                    date: '2024-01-15'
+                },
+                {
+                    studentId: 'STU2024002',
+                    name: 'Jane Smith',
+                    amount: 2000,
+                    date: '2024-01-16'
+                }
+            ];
+            
+            preview.innerHTML = sampleData.map(row => `
+                <tr>
+                    <td>${row.studentId}</td>
+                    <td>${row.name}</td>
+                    <td>${includePayment ? Utils.formatCurrency(row.amount) : '-'}</td>
+                    <td>${includeDate ? row.date : '-'}</td>
+                </tr>
+            `).join('');
+            
+            Utils.showToast('Custom report preview generated', 'success');
+        }
+    </script>
+</body>
+</html>

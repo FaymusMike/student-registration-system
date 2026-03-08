@@ -1,0 +1,431 @@
+/* Responsive Design Styles */
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+}
+
+/* Large devices (desktops, 992px to 1199px) */
+@media (max-width: 1199px) {
+    .sidebar {
+        width: 220px;
+    }
+    
+    .main-content {
+        margin-left: 220px;
+    }
+    
+    .stats-card h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Medium devices (tablets, 768px to 991px) */
+@media (max-width: 991px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1050;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .navbar .search-box {
+        width: 200px;
+    }
+    
+    .stats-card {
+        margin-bottom: 15px;
+    }
+    
+    .card-header .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .card-header .nav-tabs .nav-item {
+        flex: 0 0 auto;
+    }
+}
+
+/* Small devices (landscape phones, 576px to 767px) */
+@media (max-width: 767px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem;
+    }
+    
+    h3 {
+        font-size: 1.5rem;
+    }
+    
+    .hero-section {
+        padding: 60px 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .stats-card {
+        text-align: center;
+    }
+    
+    .stats-card .d-flex {
+        flex-direction: column;
+    }
+    
+    .stats-icon {
+        margin-top: 10px;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .profile-avatar-container img {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .footer .text-md-end {
+        text-align: left !important;
+        margin-top: 10px;
+    }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .hero-section {
+        padding: 40px 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 1.5rem;
+    }
+    
+    .hero-section .lead {
+        font-size: 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .table th, .table td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .stats-card h3 {
+        font-size: 1.25rem;
+    }
+    
+    .stats-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .modal-header, .modal-footer {
+        padding: 0.75rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+    
+    .receipt-container {
+        padding: 15px !important;
+    }
+    
+    .receipt-container h3 {
+        font-size: 1.25rem;
+    }
+    
+    .receipt-container h5 {
+        font-size: 1rem;
+    }
+}
+
+/* Landscape orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar {
+        overflow-y: auto;
+    }
+    
+    .modal-dialog {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar, .navbar, .footer, .btn, .no-print {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 20px !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+    
+    .table {
+        border-collapse: collapse !important;
+    }
+    
+    .table th, .table td {
+        border: 1px solid #ddd !important;
+    }
+}
+
+/* High-resolution displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .hero-section {
+        background-image: linear-gradient(135deg, var(--primary-color), #0056b3);
+    }
+}
+
+/* Dark mode responsive adjustments */
+@media (prefers-color-scheme: dark) {
+    body:not(.light-mode) .sidebar {
+        background-color: #1e2125;
+    }
+    
+    body:not(.light-mode) .card {
+        background-color: #2c3034;
+        border-color: #373b3e;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn, .nav-link, .dropdown-item {
+        padding: 0.75rem 1rem;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: transparent;
+    }
+    
+    .course-card:hover {
+        transform: none;
+    }
+    
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+}
+
+/* Loading states */
+@media (max-width: 767px) {
+    .loading-spinner {
+        width: 30px;
+        height: 30px;
+        border-width: 2px;
+    }
+}
+
+/* Grid adjustments */
+@media (max-width: 991px) {
+    .row.g-4 {
+        --bs-gutter-y: 1rem;
+    }
+}
+
+/* Modal responsiveness */
+@media (max-width: 576px) {
+    .modal-dialog.modal-lg {
+        max-width: 95%;
+    }
+    
+    .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+/* Table responsiveness */
+@media (max-width: 767px) {
+    .table-responsive-stack tr {
+        display: block;
+        border: 1px solid #dee2e6;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    
+    .table-responsive-stack td {
+        display: block;
+        text-align: right;
+        border: none;
+        padding: 0.5rem;
+    }
+    
+    .table-responsive-stack td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+    }
+}
+
+/* Chart responsiveness */
+.chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+}
+
+@media (max-width: 767px) {
+    .chart-container {
+        min-height: 250px;
+    }
+}
+
+/* Card grid adjustments */
+@media (max-width: 767px) {
+    .card-deck {
+        display: block;
+    }
+    
+    .card-deck .card {
+        margin-bottom: 15px;
+    }
+}
+
+/* Form responsiveness */
+@media (max-width: 576px) {
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-row > [class*="col-"] {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Button groups on mobile */
+@media (max-width: 576px) {
+    .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .btn-group .btn {
+        flex: 1 1 auto;
+        margin: 2px;
+        border-radius: 5px !important;
+    }
+}
+
+/* Pagination on mobile */
+@media (max-width: 576px) {
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .pagination .page-item {
+        margin: 2px;
+    }
+}
+
+/* Alert responsiveness */
+@media (max-width: 576px) {
+    .alert {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .alert .btn-close {
+        padding: 0.75rem;
+    }
+}
+
+/* Badge responsiveness */
+@media (max-width: 576px) {
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Progress bar responsiveness */
+@media (max-width: 576px) {
+    .progress {
+        height: 0.5rem;
+    }
+}
+
+/* List group responsiveness */
+@media (max-width: 576px) {
+    .list-group-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Dropdown responsiveness */
+@media (max-width: 576px) {
+    .dropdown-menu {
+        max-width: 90vw;
+        right: 5px !important;
+        left: 5px !important;
+    }
+}

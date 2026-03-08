@@ -1,0 +1,158 @@
+/* Dark Mode Styles */
+
+body.dark-mode {
+    background-color: var(--dark-bg);
+    color: #f8f9fa;
+}
+
+/* Cards */
+body.dark-mode .card {
+    background-color: #2c3034;
+    border-color: #373b3e;
+}
+
+body.dark-mode .card-header,
+body.dark-mode .card-footer {
+    background-color: #1e2125;
+    border-color: #373b3e;
+}
+
+/* Tables */
+body.dark-mode .table {
+    color: #f8f9fa;
+}
+
+body.dark-mode .table td,
+body.dark-mode .table th {
+    border-color: #373b3e;
+}
+
+body.dark-mode .table-hover tbody tr:hover {
+    background-color: #2c3034;
+}
+
+/* Forms */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #2c3034;
+    border-color: #373b3e;
+    color: #f8f9fa;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: #2c3034;
+    color: #f8f9fa;
+}
+
+/* Navigation */
+body.dark-mode .navbar-light {
+    background-color: #1e2125 !important;
+}
+
+body.dark-mode .nav-link {
+    color: #f8f9fa;
+}
+
+body.dark-mode .nav-link:hover {
+    background-color: #2c3034;
+}
+
+/* Sidebar */
+body.dark-mode .sidebar {
+    background-color: #1e2125;
+}
+
+/* Modals */
+body.dark-mode .modal-content {
+    background-color: #2c3034;
+    border-color: #373b3e;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: #373b3e;
+}
+
+/* Dropdowns */
+body.dark-mode .dropdown-menu {
+    background-color: #2c3034;
+    border-color: #373b3e;
+}
+
+body.dark-mode .dropdown-item {
+    color: #f8f9fa;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: #373b3e;
+}
+
+/* Alerts */
+body.dark-mode .alert-light {
+    background-color: #2c3034;
+    border-color: #373b3e;
+    color: #f8f9fa;
+}
+
+/* Invoice */
+body.dark-mode .invoice-card {
+    background-color: #2c3034;
+}
+
+/* Code blocks */
+body.dark-mode pre,
+body.dark-mode code {
+    background-color: #1e2125;
+    color: #f8f9fa;
+}
+
+/* Scrollbar for dark mode */
+body.dark-mode ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+    background: #1e2125;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #373b3e;
+    border-radius: 5px;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #4a4f55;
+}
+
+/* Chart colors for dark mode */
+body.dark-mode .chart-container {
+    filter: brightness(0.9);
+}
+
+/* Button variations for dark mode */
+body.dark-mode .btn-outline-primary {
+    color: #8bb9fe;
+    border-color: #8bb9fe;
+}
+
+body.dark-mode .btn-outline-primary:hover {
+    color: #fff;
+    background-color: #8bb9fe;
+    border-color: #8bb9fe;
+}
+
+/* Text colors */
+body.dark-mode .text-muted {
+    color: #9ca3af !important;
+}
+
+/* Background utilities */
+body.dark-mode .bg-light {
+    background-color: #2c3034 !important;
+}
+
+body.dark-mode .bg-white {
+    background-color: #1e2125 !important;
+}

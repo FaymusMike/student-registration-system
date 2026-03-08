@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments - UniPortal</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Paystack -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dark-mode.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Component -->
+        <div id="sidebarContainer"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar Component -->
+            <div id="navbarContainer"></div>
+
+            <!-- Payments Content -->
+            <div class="container-fluid">
+                <!-- Page Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h4 class="mb-3">Payments</h4>
+                                <p class="mb-0">Make secure payments for your tuition and fees</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Tabs -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-bs-toggle="tab" href="#makePayment">
+                                            <i class="fas fa-credit-card me-2"></i>Make Payment
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#paymentHistory">
+                                            <i class="fas fa-history me-2"></i>Payment History
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#receipts">
+                                            <i class="fas fa-receipt me-2"></i>Receipts
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#pendingPayments">
+                                            <i class="fas fa-clock me-2"></i>Pending Payments
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="tab-content">
+                                    <!-- Make Payment Tab -->
+                                    <div class="tab-pane fade show active" id="makePayment">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <div class="card mb-4">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-3">Outstanding Fees</h5>
+                                                        <div class="table-responsive">
+                                                            <table class="table" id="outstandingFeesTable">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Description</th>
+                                                                        <th>Amount</th>
+                                                                        <th>Due Date</th>
+                                                                        <th>Status</th>
+                                                                        <th>Select</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="outstandingFeesBody">
+                                                                    <!-- Populated by JavaScript -->
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr>
+                                                                        <th colspan="4" class="text-end">Total Selected:</th>
+                                                                        <th id="selectedTotal">$0.00</th>
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-3">Payment Details</h5>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Amount to Pay</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text">$</span>
+                                                                <input type="number" class="form-control" id="paymentAmount" readonly>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Payment Method</label>
+                                                            <select class="form-select" id="paymentMethod">
+                                                                <option value="paystack">Paystack</option>
+                                                                <option value="flutterwave">Flutterwave</option>
+                                                                <option value="card">Credit/Debit Card</option>
+                                                                <option value="bank">Bank Transfer</option>
+                                                            </select>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Email Address</label>
+                                                            <input type="email" class="form-control" id="paymentEmail" readonly>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Phone Number</label>
+                                                            <input type="tel" class="form-control" id="paymentPhone">
+                                                        </div>
+                                                        
+                                                        <button class="btn btn-primary w-100" onclick="initializePayment()" id="payNowBtn">
+                                                            <i class="fas fa-lock me-2"></i>Pay Now
+                                                        </button>
+                                                        
+                                                        <div class="mt-3 text-center">
+                                                            <img src="https://paystack.com/assets/img/logo.svg" alt="Paystack" height="30" class="me-2">
+                                                            <img src="https://flutterwave.com/images/logo-colored.svg" alt="Flutterwave" height="30">
+                                                        </div>
+                                                        
+                                                        <div class="mt-3 small text-muted">
+                                                            <i class="fas fa-shield-alt me-1"></i>
+                                                            Secured by 256-bit SSL encryption
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="card mt-4">
+                                                    <div class="card-body">
+                                                        <h6>Payment Instructions</h6>
+                                                        <ol class="small">
+                                                            <li>Select the fees you want to pay</li>
+                                                            <li>Choose your payment method</li>
+                                                            <li>Click "Pay Now" to proceed</li>
+                                                            <li>Complete payment on the secure page</li>
+                                                            <li>Download your receipt</li>
+                                                        </ol>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Payment History Tab -->
+                                    <div class="tab-pane fade" id="paymentHistory">
+                                        <div class="mb-3">
+                                            <button class="btn btn-success" onclick="exportPaymentHistory()">
+                                                <i class="fas fa-file-excel me-2"></i>Export to Excel
+                                            </button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="paymentHistoryTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Reference</th>
+                                                        <th>Description</th>
+                                                        <th>Amount</th>
+                                                        <th>Date</th>
+                                                        <th>Method</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="paymentHistoryBody">
+                                                    <!-- Populated by JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Receipts Tab -->
+                                    <div class="tab-pane fade" id="receipts">
+                                        <div class="row g-4" id="receiptsContainer">
+                                            <!-- Populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Pending Payments Tab -->
+                                    <div class="tab-pane fade" id="pendingPayments">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Reference</th>
+                                                        <th>Description</th>
+                                                        <th>Amount</th>
+                                                        <th>Date</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="pendingPaymentsBody">
+                                                    <!-- Populated by JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Component -->
+            <div id="footerContainer"></div>
+        </div>
+    </div>
+
+    <!-- Payment Receipt Modal -->
+    <div class="modal fade" id="receiptModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment Receipt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="receipt" id="receiptContent">
+                        <!-- Receipt content will be populated -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="downloadReceiptPDF()">
+                        <i class="fas fa-download me-2"></i>Download PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="printReceipt()">
+                        <i class="fas fa-print me-2"></i>Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/api-integration.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/components/sidebar.js"></script>
+    <script src="/components/navbar.js"></script>
+    <script src="/components/footer.js"></script>
+    
+    <script>
+        // Check authentication
+        if (!Auth.checkAuth()) {
+            window.location.href = '/login.html';
+        }
+
+        // Load components
+        document.getElementById('sidebarContainer').innerHTML = Sidebar.render();
+        document.getElementById('navbarContainer').innerHTML = Navbar.render({ title: 'Payments' });
+        document.getElementById('footerContainer').innerHTML = Footer.render();
+
+        // State
+        let selectedPayments = [];
+        let currentReceipt = null;
+
+        // Load payment data
+        loadPaymentData();
+
+        function loadPaymentData() {
+            const user = Auth.getCurrentUser();
+            
+            document.getElementById('paymentEmail').value = user.email;
+            document.getElementById('paymentPhone').value = user.phone || '';
+            
+            loadOutstandingFees();
+            loadPaymentHistory();
+            loadPendingPayments();
+            loadReceipts();
+        }
+
+        function loadOutstandingFees() {
+            const user = Auth.getCurrentUser();
+            
+            // Get pending registrations
+            const registrations = Storage.getRegistrations({ 
+                studentId: user.id, 
+                status: 'approved' 
+            });
+            
+            // Get unpaid payments
+            const payments = Storage.getPayments({ 
+                studentId: user.id,
+                status: 'pending' 
+            });
+            
+            const tbody = document.getElementById('outstandingFeesBody');
+            
+            let outstandingItems = [];
+            
+            // Add registration fees
+            registrations.forEach(reg => {
+                outstandingItems.push({
+                    id: reg.id,
+                    description: `Course Registration (${reg.session})`,
+                    amount: reg.totalFees,
+                    dueDate: new Date(Date.now() + 7*86400000).toISOString(), // 7 days from now
+                    type: 'registration',
+                    status: 'pending'
+                });
+            });
+            
+            // Add other pending payments
+            payments.forEach(pay => {
+                outstandingItems.push({
+                    id: pay.id,
+                    description: pay.description || 'Tuition Fee',
+                    amount: pay.amount,
+                    dueDate: pay.dueDate || new Date().toISOString(),
+                    type: 'payment',
+                    status: 'pending'
+                });
+            });
+            
+            if (outstandingItems.length > 0) {
+                tbody.innerHTML = outstandingItems.map(item => `
+                    <tr>
+                        <td>${item.description}</td>
+                        <td>$${item.amount.toFixed(2)}</td>
+                        <td>${Utils.formatDate(item.dueDate)}</td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                        <td>
+                            <input type="checkbox" 
+                                   class="payment-checkbox form-check-input" 
+                                   data-amount="${item.amount}"
+                                   data-id="${item.id}"
+                                   onchange="updateSelectedTotal()">
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No outstanding fees</td></tr>';
+            }
+        }
+
+        function updateSelectedTotal() {
+            const checkboxes = document.querySelectorAll('.payment-checkbox:checked');
+            let total = 0;
+            
+            checkboxes.forEach(cb => {
+                total += parseFloat(cb.dataset.amount);
+            });
+            
+            document.getElementById('selectedTotal').textContent = Utils.formatCurrency(total);
+            document.getElementById('paymentAmount').value = total;
+        }
+
+        function loadPaymentHistory() {
+            const user = Auth.getCurrentUser();
+            const payments = Storage.getPayments({ studentId: user.id })
+                .filter(p => p.status === 'completed' || p.status === 'failed')
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            const tbody = document.getElementById('paymentHistoryBody');
+            
+            if (payments.length > 0) {
+                tbody.innerHTML = payments.map(payment => `
+                    <tr>
+                        <td><small>${payment.id}</small></td>
+                        <td>${payment.description || 'Tuition Payment'}</td>
+                        <td>${Utils.formatCurrency(payment.amount)}</td>
+                        <td>${Utils.formatDate(payment.createdAt, 'long')}</td>
+                        <td>${payment.method || 'Paystack'}</td>
+                        <td>
+                            <span class="badge bg-${payment.status === 'completed' ? 'success' : 'danger'}">
+                                ${payment.status}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewReceipt('${payment.id}')">
+                                <i class="fas fa-receipt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No payment history</td></tr>';
+            }
+        }
+
+        function loadPendingPayments() {
+            const user = Auth.getCurrentUser();
+            const payments = Storage.getPayments({ 
+                studentId: user.id,
+                status: 'pending' 
+            }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            const tbody = document.getElementById('pendingPaymentsBody');
+            
+            if (payments.length > 0) {
+                tbody.innerHTML = payments.map(payment => `
+                    <tr>
+                        <td>${payment.id}</td>
+                        <td>${payment.description || 'Pending Payment'}</td>
+                        <td>${Utils.formatCurrency(payment.amount)}</td>
+                        <td>${Utils.formatDate(payment.createdAt)}</td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="retryPayment('${payment.id}')">
+                                Retry
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="cancelPayment('${payment.id}')">
+                                Cancel
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No pending payments</td></tr>';
+            }
+        }
+
+        function loadReceipts() {
+            const user = Auth.getCurrentUser();
+            const payments = Storage.getPayments({ 
+                studentId: user.id,
+                status: 'completed' 
+            }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            const container = document.getElementById('receiptsContainer');
+            
+            if (payments.length > 0) {
+                container.innerHTML = payments.map(payment => `
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6 class="mb-1">Receipt #${payment.id}</h6>
+                                        <small class="text-muted">${Utils.formatDate(payment.createdAt)}</small>
+                                    </div>
+                                    <span class="badge bg-success">Paid</span>
+                                </div>
+                                <p class="mb-1"><strong>Amount:</strong> ${Utils.formatCurrency(payment.amount)}</p>
+                                <p class="mb-1"><strong>Method:</strong> ${payment.method || 'Paystack'}</p>
+                                <p class="mb-3"><strong>Description:</strong> ${payment.description || 'Tuition Payment'}</p>
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewReceipt('${payment.id}')">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" onclick="downloadReceipt('${payment.id}')">
+                                        <i class="fas fa-download"></i> Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="col-12"><p class="text-center text-muted">No receipts available</p></div>';
+            }
+        }
+
+        function initializePayment() {
+            const total = parseFloat(document.getElementById('paymentAmount').value);
+            
+            if (total <= 0) {
+                Utils.showToast('Please select at least one item to pay', 'warning');
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            const method = document.getElementById('paymentMethod').value;
+            
+            // Create payment record
+            const paymentData = {
+                studentId: user.id,
+                amount: total,
+                description: 'Tuition and Fees Payment',
+                method: method,
+                status: 'pending',
+                reference: Storage.generatePaymentReference()
+            };
+            
+            const payment = Storage.createPayment(paymentData);
+            
+            if (method === 'paystack') {
+                payWithPaystack(payment);
+            } else if (method === 'flutterwave') {
+                payWithFlutterwave(payment);
+            } else {
+                // Simulate other payment methods
+                simulatePayment(payment);
+            }
+        }
+
+        function payWithPaystack(payment) {
+            const user = Auth.getCurrentUser();
+            
+            const handler = PaystackPop.setup({
+                key: 'pk_test_xxxxxxxxxxxxxxxx', // Replace with your test key
+                email: user.email,
+                amount: payment.amount * 100, // Convert to kobo
+                ref: payment.reference,
+                metadata: {
+                    studentId: user.id,
+                    paymentId: payment.id
+                },
+                callback: function(response) {
+                    // Payment successful
+                    verifyPayment(response.reference);
+                },
+                onClose: function() {
+                    Utils.showToast('Payment window closed', 'info');
+                }
+            });
+            
+            handler.openIframe();
+        }
+
+        function payWithFlutterwave(payment) {
+            // Flutterwave integration would go here
+            // For demo, simulate payment
+            simulatePayment(payment);
+        }
+
+        function simulatePayment(payment) {
+            Utils.showToast('Processing payment...', 'info');
+            
+            setTimeout(() => {
+                // Simulate successful payment
+                const updatedPayment = Storage.updatePaymentStatus(payment.id, 'completed', {
+                    transactionId: 'TXN' + Date.now(),
+                    paidAt: new Date().toISOString()
+                });
+                
+                if (updatedPayment) {
+                    Utils.showToast('Payment completed successfully!', 'success');
+                    
+                    // Update registration status
+                    const user = Auth.getCurrentUser();
+                    const registrations = Storage.getRegistrations({ studentId: user.id, status: 'approved' });
+                    registrations.forEach(reg => {
+                        Storage.approveRegistration(reg.id);
+                    });
+                    
+                    loadPaymentData();
+                }
+            }, 3000);
+        }
+
+        function verifyPayment(reference) {
+            API.verifyPayment(reference).then(result => {
+                if (result.success && result.status === 'success') {
+                    // Find and update payment
+                    const payments = Storage.getPayments();
+                    const payment = payments.find(p => p.reference === reference);
+                    
+                    if (payment) {
+                        Storage.updatePaymentStatus(payment.id, 'completed', {
+                            transactionId: result.transactionId,
+                            paidAt: result.paidAt
+                        });
+                        
+                        Utils.showToast('Payment verified successfully!', 'success');
+                        loadPaymentData();
+                    }
+                } else {
+                    Utils.showToast('Payment verification failed', 'error');
+                }
+            });
+        }
+
+        function viewReceipt(paymentId) {
+            const payment = Storage.getPayments().find(p => p.id === paymentId);
+            if (!payment) return;
+            
+            currentReceipt = payment;
+            displayReceipt(payment);
+            new bootstrap.Modal(document.getElementById('receiptModal')).show();
+        }
+
+        function displayReceipt(payment) {
+            const user = Storage.getUserById(payment.studentId);
+            const container = document.getElementById('receiptContent');
+            
+            // Generate QR code data
+            const qrData = JSON.stringify({
+                receipt: payment.id,
+                student: user.id,
+                amount: payment.amount,
+                date: payment.createdAt,
+                ref: payment.reference
+            });
+            
+            container.innerHTML = `
+                <div class="receipt-container p-4">
+                    <div class="text-center mb-4">
+                        <h3>UNIVERSITY PORTAL</h3>
+                        <h5>OFFICIAL PAYMENT RECEIPT</h5>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <p><strong>Receipt No:</strong> ${payment.id}</p>
+                            <p><strong>Date:</strong> ${Utils.formatDate(payment.createdAt, 'long')}</p>
+                            <p><strong>Student ID:</strong> ${user.id}</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p><strong>Student Name:</strong> ${user.firstName} ${user.lastName}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                            <p><strong>Phone:</strong> ${user.phone || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <table class="table table-bordered mb-4">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${payment.description || 'Tuition Payment'}</td>
+                                <td>${Utils.formatCurrency(payment.amount)}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="text-end">Total:</th>
+                                <th>${Utils.formatCurrency(payment.amount)}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Payment Method:</strong> ${payment.method || 'Paystack'}</p>
+                            <p><strong>Transaction ID:</strong> ${payment.transactionId || payment.reference}</p>
+                            <p><strong>Status:</strong> <span class="badge bg-success">PAID</span></p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <div id="receiptQR" class="d-inline-block"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4 small text-muted">
+                        <p>This is a computer-generated receipt. No signature required.</p>
+                        <p>For verification, scan the QR code or visit portal.university.edu/verify</p>
+                    </div>
+                </div>
+            `;
+            
+            // Generate QR code
+            new QRCode(document.getElementById('receiptQR'), {
+                text: qrData,
+                width: 100,
+                height: 100
+            });
+        }
+
+        function downloadReceipt(paymentId) {
+            const payment = Storage.getPayments().find(p => p.id === paymentId);
+            if (!payment) return;
+            
+            App.generateReceipt(paymentId);
+        }
+
+        function downloadReceiptPDF() {
+            if (currentReceipt) {
+                App.generateReceipt(currentReceipt.id);
+            }
+        }
+
+        function printReceipt() {
+            const receiptContent = document.getElementById('receiptContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Payment Receipt</title>
+                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                        <style>
+                            body { padding: 20px; }
+                            @media print {
+                                .no-print { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${receiptContent}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function retryPayment(paymentId) {
+            const payment = Storage.getPayments().find(p => p.id === paymentId);
+            if (payment) {
+                document.getElementById('paymentAmount').value = payment.amount;
+                document.getElementById('paymentMethod').value = payment.method || 'paystack';
+                initializePayment();
+            }
+        }
+
+        function cancelPayment(paymentId) {
+            Utils.confirm('Are you sure you want to cancel this payment?').then(confirmed => {
+                if (confirmed) {
+                    Storage.updatePaymentStatus(paymentId, 'cancelled');
+                    Utils.showToast('Payment cancelled', 'info');
+                    loadPaymentData();
+                }
+            });
+        }
+
+        function exportPaymentHistory() {
+            const user = Auth.getCurrentUser();
+            const payments = Storage.getPayments({ studentId: user.id });
+            
+            const exportData = payments.map(p => ({
+                'Reference': p.id,
+                'Description': p.description || 'Tuition Payment',
+                'Amount': p.amount,
+                'Date': Utils.formatDate(p.createdAt, 'long'),
+                'Method': p.method || 'Paystack',
+                'Status': p.status,
+                'Transaction ID': p.transactionId || 'N/A'
+            }));
+            
+            Utils.exportToExcel(exportData, 'payment_history');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - UniPortal</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dark-mode.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Component -->
+        <div id="sidebarContainer"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar Component -->
+            <div id="navbarContainer"></div>
+
+            <!-- Profile Content -->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <!-- Profile Card -->
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="profile-avatar-container mb-3">
+                                    <img id="profileAvatar" src="" alt="Profile Avatar" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                                    <button class="btn btn-sm btn-primary mt-2" onclick="changeAvatar()">
+                                        <i class="fas fa-camera me-2"></i>Change Avatar
+                                    </button>
+                                </div>
+                                <h3 id="profileFullName"></h3>
+                                <p class="text-muted" id="profileStudentId"></p>
+                                <p id="profileStatus" class="badge bg-success">Active</p>
+                                
+                                <hr>
+                                
+                                <div class="text-start">
+                                    <div class="mb-2">
+                                        <i class="fas fa-envelope text-primary me-2"></i>
+                                        <span id="profileEmail"></span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-phone text-primary me-2"></i>
+                                        <span id="profilePhone"></span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                        <span id="profileLocation"></span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-calendar text-primary me-2"></i>
+                                        <span id="profileJoined"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Links -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0">Quick Links</h6>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <a href="/pages/courses.html" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-book me-2 text-primary"></i>Course Registration
+                                </a>
+                                <a href="/pages/payments.html" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-credit-card me-2 text-success"></i>Make Payment
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action" onclick="downloadRegistrationSlip()">
+                                    <i class="fas fa-download me-2 text-info"></i>Download Registration Slip
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <!-- Profile Tabs -->
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-bs-toggle="tab" href="#personal">
+                                            <i class="fas fa-user me-2"></i>Personal Information
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#academic">
+                                            <i class="fas fa-graduation-cap me-2"></i>Academic Information
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#security">
+                                            <i class="fas fa-shield-alt me-2"></i>Security Settings
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#notifications">
+                                            <i class="fas fa-bell me-2"></i>Notifications
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="tab-content">
+                                    <!-- Personal Information Tab -->
+                                    <div class="tab-pane fade show active" id="personal">
+                                        <form id="personalInfoForm">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="firstName" class="form-label">First Name</label>
+                                                    <input type="text" class="form-control" id="firstName" required>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="lastName" class="form-label">Last Name</label>
+                                                    <input type="text" class="form-control" id="lastName" required>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="email" class="form-label">Email Address</label>
+                                                <input type="email" class="form-control" id="email" readonly>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="phone" class="form-label">Phone Number</label>
+                                                <input type="tel" class="form-control" id="phone" required>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="dob" class="form-label">Date of Birth</label>
+                                                <input type="date" class="form-control" id="dob">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="address" class="form-label">Address</label>
+                                                <textarea class="form-control" id="address" rows="2"></textarea>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="city" class="form-label">City</label>
+                                                <input type="text" class="form-control" id="city">
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="state" class="form-label">State/Province</label>
+                                                    <input type="text" class="form-control" id="state">
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="country" class="form-label">Country</label>
+                                                    <select class="form-select" id="country">
+                                                        <option value="">Select Country</option>
+                                                        <option value="US">United States</option>
+                                                        <option value="UK">United Kingdom</option>
+                                                        <option value="CA">Canada</option>
+                                                        <option value="AU">Australia</option>
+                                                        <option value="NG">Nigeria</option>
+                                                        <option value="GH">Ghana</option>
+                                                        <option value="KE">Kenya</option>
+                                                        <option value="ZA">South Africa</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="postalCode" class="form-label">Postal Code</label>
+                                                <input type="text" class="form-control" id="postalCode">
+                                            </div>
+                                            
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>Save Changes
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Academic Information Tab -->
+                                    <div class="tab-pane fade" id="academic">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Student ID</label>
+                                                <input type="text" class="form-control" id="academicStudentId" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Department</label>
+                                                <select class="form-select" id="department">
+                                                    <option value="">Select Department</option>
+                                                    <option value="CS">Computer Science</option>
+                                                    <option value="MATH">Mathematics</option>
+                                                    <option value="PHY">Physics</option>
+                                                    <option value="CHEM">Chemistry</option>
+                                                    <option value="BIO">Biology</option>
+                                                    <option value="ENG">Engineering</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Program of Study</label>
+                                                <input type="text" class="form-control" id="program" placeholder="e.g., B.Sc. Computer Science">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Year of Study</label>
+                                                <select class="form-select" id="yearOfStudy">
+                                                    <option value="1">1st Year</option>
+                                                    <option value="2">2nd Year</option>
+                                                    <option value="3">3rd Year</option>
+                                                    <option value="4">4th Year</option>
+                                                    <option value="5">5th Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Semester</label>
+                                                <select class="form-select" id="semester">
+                                                    <option value="1">First Semester</option>
+                                                    <option value="2">Second Semester</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Academic Session</label>
+                                                <select class="form-select" id="academicSession">
+                                                    <option value="2023/2024">2023/2024</option>
+                                                    <option value="2024/2025">2024/2025</option>
+                                                    <option value="2025/2026">2025/2026</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Advisor Name</label>
+                                            <input type="text" class="form-control" id="advisor" readonly>
+                                        </div>
+                                        
+                                        <button class="btn btn-primary" onclick="saveAcademicInfo()">
+                                            <i class="fas fa-save me-2"></i>Update Academic Info
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Security Settings Tab -->
+                                    <div class="tab-pane fade" id="security">
+                                        <form id="securityForm">
+                                            <div class="mb-3">
+                                                <label for="currentPassword" class="form-label">Current Password</label>
+                                                <input type="password" class="form-control" id="currentPassword" required>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="newPassword" class="form-label">New Password</label>
+                                                <input type="password" class="form-control" id="newPassword" required>
+                                                <div class="password-strength-meter mt-2">
+                                                    <div class="progress">
+                                                        <div id="newPasswordStrength" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                                <input type="password" class="form-control" id="confirmNewPassword" required>
+                                                <div id="passwordMatchMessage"></div>
+                                            </div>
+                                            
+                                            <div class="mb-3 form-check">
+                                                <input type="checkbox" class="form-check-input" id="twoFactorAuth">
+                                                <label class="form-check-label" for="twoFactorAuth">
+                                                    Enable Two-Factor Authentication
+                                                </label>
+                                            </div>
+                                            
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-key me-2"></i>Update Password
+                                            </button>
+                                        </form>
+                                        
+                                        <hr>
+                                        
+                                        <h6 class="mb-3">Active Sessions</h6>
+                                        <div class="list-group" id="activeSessions">
+                                            <!-- Populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Notifications Tab -->
+                                    <div class="tab-pane fade" id="notifications">
+                                        <div class="mb-3">
+                                            <h6>Email Notifications</h6>
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" id="emailPayment" checked>
+                                                <label class="form-check-label" for="emailPayment">Payment confirmations</label>
+                                            </div>
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" id="emailRegistration" checked>
+                                                <label class="form-check-label" for="emailRegistration">Registration updates</label>
+                                            </div>
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" id="emailAnnouncements" checked>
+                                                <label class="form-check-label" for="emailAnnouncements">University announcements</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <h6>SMS Notifications</h6>
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" id="smsPayment">
+                                                <label class="form-check-label" for="smsPayment">Payment confirmations</label>
+                                            </div>
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" id="smsRegistration">
+                                                <label class="form-check-label" for="smsRegistration">Registration updates</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <button class="btn btn-primary" onclick="saveNotificationSettings()">
+                                            <i class="fas fa-save me-2"></i>Save Preferences
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Activity -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0">Recent Activity</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline" id="recentActivity">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Component -->
+            <div id="footerContainer"></div>
+        </div>
+    </div>
+
+    <!-- Avatar Change Modal -->
+    <div class="modal fade" id="avatarModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Profile Avatar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <img id="avatarPreview" src="" alt="Avatar Preview" class="rounded-circle img-fluid" style="width: 200px; height: 200px; object-fit: cover;">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="avatarStyle" class="form-label">Avatar Style</label>
+                        <select class="form-select" id="avatarStyle">
+                            <option value="avataaars">Avataaars</option>
+                            <option value="bottts">Bottts</option>
+                            <option value="gridy">Gridy</option>
+                            <option value="identicon">Identicon</option>
+                            <option value="micah">Micah</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="avatarSeed" class="form-label">Avatar Seed (e.g., your name)</label>
+                        <input type="text" class="form-control" id="avatarSeed">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAvatar()">Save Avatar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/api-integration.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/components/sidebar.js"></script>
+    <script src="/components/navbar.js"></script>
+    <script src="/components/footer.js"></script>
+    
+    <script>
+        // Check authentication
+        if (!Auth.checkAuth()) {
+            window.location.href = '/login.html';
+        }
+
+        // Load components
+        document.getElementById('sidebarContainer').innerHTML = Sidebar.render();
+        document.getElementById('navbarContainer').innerHTML = Navbar.render({ title: 'My Profile' });
+        document.getElementById('footerContainer').innerHTML = Footer.render();
+
+        // Load profile data
+        loadProfileData();
+
+        function loadProfileData() {
+            const user = Auth.getCurrentUser();
+            if (!user) return;
+
+            // Basic info
+            document.getElementById('profileFullName').textContent = `${user.firstName} ${user.lastName}`;
+            document.getElementById('profileStudentId').textContent = user.id;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profilePhone').textContent = user.phone || 'Not provided';
+            document.getElementById('profileLocation').textContent = user.location || 'Not provided';
+            document.getElementById('profileJoined').textContent = Utils.formatDate(user.createdAt, 'long');
+            document.getElementById('profileAvatar').src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`;
+            
+            // Form fields
+            document.getElementById('firstName').value = user.firstName || '';
+            document.getElementById('lastName').value = user.lastName || '';
+            document.getElementById('email').value = user.email || '';
+            document.getElementById('phone').value = user.phone || '';
+            document.getElementById('dob').value = user.dob || '';
+            document.getElementById('address').value = user.address || '';
+            document.getElementById('city').value = user.city || '';
+            document.getElementById('state').value = user.state || '';
+            document.getElementById('country').value = user.country || '';
+            document.getElementById('postalCode').value = user.postalCode || '';
+            
+            // Academic info
+            document.getElementById('academicStudentId').value = user.id || '';
+            document.getElementById('department').value = user.department || '';
+            document.getElementById('program').value = user.program || '';
+            document.getElementById('yearOfStudy').value = user.yearOfStudy || '1';
+            document.getElementById('semester').value = user.semester || '1';
+            document.getElementById('academicSession').value = user.academicSession || '2024/2025';
+            document.getElementById('advisor').value = user.advisor || 'Dr. Smith';
+
+            // Load recent activity
+            loadRecentActivity();
+            
+            // Load active sessions
+            loadActiveSessions();
+        }
+
+        function loadRecentActivity() {
+            const user = Auth.getCurrentUser();
+            const payments = Storage.getPayments({ studentId: user.id }).slice(0, 5);
+            const registrations = Storage.getRegistrations({ studentId: user.id }).slice(0, 3);
+            
+            const activities = [];
+            
+            payments.forEach(p => {
+                activities.push({
+                    type: 'payment',
+                    description: `Payment of ${Utils.formatCurrency(p.amount)} - ${p.status}`,
+                    date: p.createdAt
+                });
+            });
+            
+            registrations.forEach(r => {
+                activities.push({
+                    type: 'registration',
+                    description: `Course registration - ${r.status}`,
+                    date: r.createdAt
+                });
+            });
+            
+            // Sort by date (most recent first)
+            activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const container = document.getElementById('recentActivity');
+            
+            if (activities.length > 0) {
+                container.innerHTML = activities.map(activity => `
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="timeline-icon me-3">
+                                <i class="fas fa-${activity.type === 'payment' ? 'credit-card' : 'book'} 
+                                      text-${activity.type === 'payment' ? 'success' : 'info'}"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <p class="mb-1">${activity.description}</p>
+                                <small class="text-muted">${Utils.formatDate(activity.date, 'long')}</small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p class="text-muted text-center">No recent activity</p>';
+            }
+        }
+
+        function loadActiveSessions() {
+            const sessions = [
+                {
+                    device: 'Chrome on Windows',
+                    location: 'New York, USA',
+                    lastActive: new Date().toISOString(),
+                    current: true
+                },
+                {
+                    device: 'Safari on iPhone',
+                    location: 'New York, USA',
+                    lastActive: new Date(Date.now() - 86400000).toISOString(),
+                    current: false
+                }
+            ];
+            
+            const container = document.getElementById('activeSessions');
+            
+            container.innerHTML = sessions.map(session => `
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-${session.device.includes('iPhone') ? 'mobile-alt' : 'desktop'} me-2"></i>
+                            <strong>${session.device}</strong>
+                            ${session.current ? '<span class="badge bg-success ms-2">Current</span>' : ''}
+                            <br>
+                            <small class="text-muted">${session.location}</small>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Last active:</small>
+                            <small class="text-muted">${Utils.formatDate(session.lastActive, 'time')}</small>
+                            ${!session.current ? '<button class="btn btn-sm btn-danger ms-2" onclick="revokeSession()"><i class="fas fa-times"></i></button>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Personal info form submission
+        document.getElementById('personalInfoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const user = Auth.getCurrentUser();
+            if (!user) return;
+            
+            const updates = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                phone: document.getElementById('phone').value,
+                dob: document.getElementById('dob').value,
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                country: document.getElementById('country').value,
+                postalCode: document.getElementById('postalCode').value
+            };
+            
+            const result = Auth.updateProfile(user.id, updates);
+            
+            if (result.success) {
+                Utils.showToast('Profile updated successfully!', 'success');
+                loadProfileData(); // Reload data
+            } else {
+                Utils.showToast('Failed to update profile', 'error');
+            }
+        });
+
+        // Security form submission
+        document.getElementById('securityForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                Utils.showToast('New passwords do not match', 'error');
+                return;
+            }
+            
+            const strength = Auth.checkPasswordStrength(newPassword);
+            if (!strength.isValid) {
+                Utils.showToast('Password is too weak', 'error');
+                return;
+            }
+            
+            // In a real app, verify current password and update
+            Utils.showToast('Password updated successfully!', 'success');
+            this.reset();
+        });
+
+        // Password strength checker
+        document.getElementById('newPassword').addEventListener('input', function() {
+            const password = this.value;
+            const strength = Auth.checkPasswordStrength(password);
+            
+            const progressBar = document.getElementById('newPasswordStrength');
+            progressBar.style.width = strength.strength + '%';
+            progressBar.className = `progress-bar bg-${strength.color}`;
+        });
+
+        // Password match checker
+        document.getElementById('confirmNewPassword').addEventListener('input', function() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = this.value;
+            
+            const messageDiv = document.getElementById('passwordMatchMessage');
+            
+            if (newPassword === confirmPassword) {
+                messageDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Passwords match</span>';
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+            } else {
+                messageDiv.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Passwords do not match</span>';
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            }
+        });
+
+        function changeAvatar() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('avatarPreview').src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`;
+            document.getElementById('avatarSeed').value = user.email;
+            new bootstrap.Modal(document.getElementById('avatarModal')).show();
+        }
+
+        function saveAvatar() {
+            const style = document.getElementById('avatarStyle').value;
+            const seed = document.getElementById('avatarSeed').value;
+            
+            const newAvatar = `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}`;
+            
+            const user = Auth.getCurrentUser();
+            const result = Auth.updateProfile(user.id, { avatar: newAvatar });
+            
+            if (result.success) {
+                document.getElementById('profileAvatar').src = newAvatar;
+                Utils.showToast('Avatar updated successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('avatarModal')).hide();
+            }
+        }
+
+        function saveAcademicInfo() {
+            const user = Auth.getCurrentUser();
+            
+            const updates = {
+                department: document.getElementById('department').value,
+                program: document.getElementById('program').value,
+                yearOfStudy: document.getElementById('yearOfStudy').value,
+                semester: document.getElementById('semester').value,
+                academicSession: document.getElementById('academicSession').value
+            };
+            
+            const result = Auth.updateProfile(user.id, updates);
+            
+            if (result.success) {
+                Utils.showToast('Academic information updated!', 'success');
+            } else {
+                Utils.showToast('Update failed', 'error');
+            }
+        }
+
+        function saveNotificationSettings() {
+            Utils.showToast('Notification preferences saved!', 'success');
+        }
+
+        function downloadRegistrationSlip() {
+            const user = Auth.getCurrentUser();
+            const registrations = Storage.getRegistrations({ studentId: user.id, status: 'approved' });
+            
+            if (registrations.length === 0) {
+                Utils.showToast('No approved registration found', 'warning');
+                return;
+            }
+            
+            const registration = registrations[0];
+            const courses = Storage.getCourses();
+            const selectedCourses = registration.courses.map(courseId => 
+                courses.find(c => c.id === courseId)
+            ).filter(c => c);
+            
+            // Generate PDF using jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(20);
+            doc.text('Registration Slip', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.text(`Student ID: ${user.id}`, 20, 40);
+            doc.text(`Name: ${user.firstName} ${user.lastName}`, 20, 50);
+            doc.text(`Session: ${registration.session}`, 20, 60);
+            doc.text(`Date: ${Utils.formatDate(registration.createdAt, 'long')}`, 20, 70);
+            
+            doc.text('Registered Courses:', 20, 90);
+            
+            let yPos = 100;
+            selectedCourses.forEach((course, index) => {
+                doc.text(`${index + 1}. ${course.code} - ${course.title} (${course.credits} credits)`, 30, yPos);
+                yPos += 10;
+            });
+            
+            doc.text(`Total Fees: ${Utils.formatCurrency(registration.totalFees)}`, 20, yPos + 10);
+            
+            doc.save(`registration-slip-${user.id}.pdf`);
+        }
+
+        function revokeSession() {
+            Utils.showToast('Session revoked', 'success');
+        }
+    </script>
+</body>
+</html>
