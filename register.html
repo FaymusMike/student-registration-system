@@ -3,121 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration - UniPortal</title>
+    <title>Register - UniPortal</title>
     
-    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/dark-mode.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="card shadow-lg">
-                    <div class="card-body p-5">
-                        <div class="text-center mb-4">
-                            <i class="fas fa-user-graduate fa-3x text-primary"></i>
-                            <h2 class="mt-3">Student Registration</h2>
-                            <p class="text-muted">Create your account to get started</p>
+                <div class="form-container">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-graduate fa-3x text-primary"></i>
+                        <h3 class="mt-3">Student Registration</h3>
+                        <p class="text-muted">Create your account to get started</p>
+                    </div>
+                    
+                    <form id="registerForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
                         </div>
                         
-                        <form id="registrationForm" novalidate>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="firstName" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="firstName" required>
-                                    <div class="invalid-feedback">Please enter your first name</div>
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
-                                    <label for="lastName" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" id="lastName" required>
-                                    <div class="invalid-feedback">Please enter your last name</div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" class="form-control" id="email" required>
-                                </div>
-                                <div id="emailValidation" class="form-text"></div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                    <input type="tel" class="form-control" id="phone" required>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="location" class="form-label">Location</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-                                    <input type="text" class="form-control" id="location" placeholder="Start typing your city" autocomplete="off">
-                                </div>
-                                <div id="locationSuggestions" class="list-group mt-1"></div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" required>
-                                </div>
-                                <div class="password-strength-meter mt-2">
-                                    <div class="progress">
-                                        <div id="passwordStrength" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                                    </div>
-                                    <div id="passwordStrengthText" class="small mt-1"></div>
-                                </div>
-                                <ul id="passwordRequirements" class="password-requirements mt-2">
-                                    <li id="lengthReq"><i class="far fa-circle"></i> At least 8 characters</li>
-                                    <li id="uppercaseReq"><i class="far fa-circle"></i> One uppercase letter</li>
-                                    <li id="lowercaseReq"><i class="far fa-circle"></i> One lowercase letter</li>
-                                    <li id="numberReq"><i class="far fa-circle"></i> One number</li>
-                                    <li id="specialReq"><i class="far fa-circle"></i> One special character</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="confirmPassword" required>
-                                </div>
-                                <div id="passwordMatch" class="form-text"></div>
-                            </div>
-                            
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="terms" required>
-                                <label class="form-check-label" for="terms">
-                                    I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
-                                </label>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-100 py-2">
-                                <i class="fas fa-user-plus me-2"></i>Register
-                            </button>
-                            
-                            <div class="text-center mt-3">
-                                <a href="/login.html" class="text-decoration-none">
-                                    Already have an account? Login here
-                                </a>
-                            </div>
-                        </form>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" required>
+                            <div id="emailFeedback" class="form-text"></div>
+                        </div>
                         
-                        <div id="registrationMessage" class="mt-3"></div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                            <div class="password-strength mt-2">
+                                <div class="progress">
+                                    <div id="passwordStrength" class="progress-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <ul id="passwordRequirements" class="mt-2 small">
+                                <li id="lengthReq"><i class="far fa-circle me-1"></i> At least 8 characters</li>
+                                <li id="uppercaseReq"><i class="far fa-circle me-1"></i> One uppercase letter</li>
+                                <li id="lowercaseReq"><i class="far fa-circle me-1"></i> One lowercase letter</li>
+                                <li id="numberReq"><i class="far fa-circle me-1"></i> One number</li>
+                                <li id="specialReq"><i class="far fa-circle me-1"></i> One special character</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                            <div id="passwordMatch" class="form-text"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" placeholder="Start typing your city">
+                            <div id="locationSuggestions" class="list-group mt-1"></div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <a href="login.html" class="text-decoration-none">Already have an account? Login</a>
                     </div>
+                    
+                    <div id="message" class="mt-3"></div>
                 </div>
             </div>
         </div>
@@ -134,9 +110,6 @@
                 <div class="modal-body">
                     <p>By registering, you agree to comply with all university policies and regulations...</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
             </div>
         </div>
     </div>
@@ -145,24 +118,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JS -->
-    <script src="/js/storage.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
     
     <script>
-        // Real-time password strength checker
+        // Password strength checker
         document.getElementById('password').addEventListener('input', function() {
             const password = this.value;
-            const strength = Auth.checkPasswordStrength(password);
+            const strength = Utils.checkPasswordStrength(password);
             
             // Update progress bar
             const progressBar = document.getElementById('passwordStrength');
-            progressBar.style.width = strength.strength + '%';
+            progressBar.style.width = strength.score + '%';
             progressBar.className = `progress-bar bg-${strength.color}`;
-            
-            // Update strength text
-            document.getElementById('passwordStrengthText').textContent = 
-                `Password strength: ${strength.level.charAt(0).toUpperCase() + strength.level.slice(1)}`;
             
             // Update requirements
             updateRequirement('lengthReq', password.length >= 8);
@@ -177,11 +146,11 @@
             const icon = element.querySelector('i');
             
             if (isValid) {
-                element.classList.add('valid');
-                icon.className = 'fas fa-check-circle text-success';
+                element.classList.add('text-success');
+                icon.className = 'fas fa-check-circle me-1';
             } else {
-                element.classList.remove('valid');
-                icon.className = 'far fa-circle';
+                element.classList.remove('text-success');
+                icon.className = 'far fa-circle me-1';
             }
         }
         
@@ -193,39 +162,64 @@
             
             if (password === confirm) {
                 matchDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Passwords match</span>';
-                this.classList.remove('is-invalid');
                 this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
             } else {
                 matchDiv.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Passwords do not match</span>';
-                this.classList.remove('is-valid');
                 this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
             }
         });
         
         // Email validation
         document.getElementById('email').addEventListener('blur', async function() {
             const email = this.value;
-            const validationDiv = document.getElementById('emailValidation');
+            const result = await Utils.validateEmail(email);
             
-            if (email) {
-                const result = await Auth.validateEmail(email);
-                if (result.valid) {
-                    validationDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Valid email format</span>';
-                    this.classList.add('is-valid');
-                } else {
-                    validationDiv.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Invalid email format</span>';
-                    this.classList.add('is-invalid');
-                }
+            const feedback = document.getElementById('emailFeedback');
+            
+            if (result.valid) {
+                feedback.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Valid email</span>';
+                this.classList.add('is-valid');
+            } else {
+                feedback.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Invalid email</span>';
+                this.classList.add('is-invalid');
             }
         });
         
+        // Location autocomplete
+        const locationInput = document.getElementById('location');
+        const suggestions = document.getElementById('locationSuggestions');
+        
+        locationInput.addEventListener('input', Utils.debounce(async function() {
+            const query = this.value;
+            if (query.length < 3) {
+                suggestions.innerHTML = '';
+                return;
+            }
+            
+            const cities = await Utils.searchCities(query);
+            suggestions.innerHTML = cities.map(c => 
+                `<button class="list-group-item list-group-item-action" onclick="selectLocation('${c.city}, ${c.country}')">
+                    ${c.city}, ${c.country}
+                </button>`
+            ).join('');
+        }, 500));
+        
+        window.selectLocation = function(location) {
+            locationInput.value = location;
+            suggestions.innerHTML = '';
+        };
+        
         // Form submission
-        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            if (!this.checkValidity()) {
-                e.stopPropagation();
-                this.classList.add('was-validated');
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirm) {
+                Utils.showToast('Passwords do not match', 'error');
                 return;
             }
             
@@ -234,48 +228,38 @@
                 lastName: document.getElementById('lastName').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
-                location: document.getElementById('location').value,
-                password: document.getElementById('password').value
+                password: password,
+                location: document.getElementById('location').value
             };
             
-            const result = await Auth.registerStudent(userData);
+            const result = await Auth.register(userData);
             
-            const messageDiv = document.getElementById('registrationMessage');
+            const messageDiv = document.getElementById('message');
             
             if (result.success) {
                 messageDiv.innerHTML = `
                     <div class="alert alert-success">
                         <i class="fas fa-check-circle me-2"></i>${result.message}
-                        <br>
-                        <small>Your Student ID: ${result.user.id}</small>
                     </div>
                 `;
                 
-                this.reset();
-                
                 setTimeout(() => {
-                    window.location.href = '/login.html';
+                    window.location.href = 'login.html';
                 }, 3000);
             } else {
                 let errorHtml = `
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-circle me-2"></i>${result.message}
+                    </div>
                 `;
                 
-                if (result.requirements) {
-                    errorHtml += '<ul class="mt-2 mb-0">';
-                    result.requirements.forEach(req => {
-                        errorHtml += `<li>${req}</li>`;
-                    });
-                    errorHtml += '</ul>';
+                if (result.feedback) {
+                    errorHtml += '<ul class="mt-2">' + result.feedback.map(f => `<li>${f}</li>`).join('') + '</ul>';
                 }
                 
-                errorHtml += '</div>';
                 messageDiv.innerHTML = errorHtml;
             }
         });
-        
-        // Location autocomplete is handled by App.setupLocationAutocomplete()
     </script>
 </body>
 </html>

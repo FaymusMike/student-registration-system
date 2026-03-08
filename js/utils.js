@@ -1,161 +1,260 @@
-// Utility Functions Module
+/**
+ * UniPortal - Utilities Module
+ * Handles all utility functions, API integrations, and helpers
+ */
 
 const Utils = (function() {
-    // Format currency
+    // ==================== API CONFIGURATION ====================
+    const API_CONFIG = {
+        emailValidation: {
+            key: 'YOUR_API_KEY', // Replace with actual API key
+            url: 'https://emailvalidation.abstractapi.com/v1/'
+        },
+        paystack: {
+            publicKey: 'pk_test_xxxxxxxxxxxxxxxx', // Replace with test key
+            url: 'https://api.paystack.co'
+        },
+        geoDB: {
+            key: 'YOUR_RAPIDAPI_KEY', // Replace with RapidAPI key
+            host: 'wft-geo-db.p.rapidapi.com'
+        }
+    };
+
+    // ==================== FORMATTING FUNCTIONS ====================
+    
+    /**
+     * Format currency to USD
+     */
     function formatCurrency(amount) {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            minimumFractionDigits: 2
         }).format(amount);
     }
 
-    // Format date
+    /**
+     * Format date
+     */
     function formatDate(dateString, format = 'short') {
         const date = new Date(dateString);
+        const options = format === 'short' 
+            ? { year: 'numeric', month: 'short', day: 'numeric' }
+            : { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         
-        if (format === 'short') {
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        } else if (format === 'long') {
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } else if (format === 'time') {
-            return date.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        
-        return date.toLocaleDateString();
+        return date.toLocaleDateString('en-US', options);
     }
 
-    // Generate random ID
+    /**
+     * Generate unique ID
+     */
     function generateId(prefix = '') {
-        return prefix + Date.now() + Math.random().toString(36).substr(2, 9);
+        return prefix + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
     }
 
-    // Debounce function
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
+    // ==================== VALIDATION FUNCTIONS ====================
 
-    // Throttle function
-    function throttle(func, limit) {
-        let inThrottle;
-        return function(...args) {
-            if (!inThrottle) {
-                func.apply(this, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
-            }
-        };
-    }
-
-    // Deep clone object
-    function deepClone(obj) {
-        return JSON.parse(JSON.stringify(obj));
-    }
-
-    // Compare two objects
-    function isEqual(obj1, obj2) {
-        return JSON.stringify(obj1) === JSON.stringify(obj2);
-    }
-
-    // Sanitize input (prevent XSS)
-    function sanitizeInput(input) {
-        if (typeof input !== 'string') return input;
-        
-        return input
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#x27;')
-            .replace(/\//g, '&#x2F;');
-    }
-
-    // Validate email format
+    /**
+     * Validate email format
+     */
     function isValidEmail(email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
     }
 
-    // Validate phone number
-    function isValidPhone(phone) {
-        const re = /^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/;
-        return re.test(phone);
-    }
+    /**
+     * Check password strength
+     */
+    function checkPasswordStrength(password) {
+        let score = 0;
+        const feedback = [];
 
-    // Show toast notification
-    function showToast(message, type = 'info', duration = 3000) {
-        // Create toast container if it doesn't exist
-        let container = document.querySelector('.toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-            document.body.appendChild(container);
+        if (password.length >= 8) {
+            score += 25;
+        } else {
+            feedback.push('At least 8 characters');
         }
 
-        // Create toast element
-        const toastId = 'toast-' + Date.now();
-        const toast = document.createElement('div');
-        toast.id = toastId;
-        toast.className = `toast align-items-center text-white bg-${type} border-0`;
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
+        if (/[A-Z]/.test(password)) {
+            score += 25;
+        } else {
+            feedback.push('One uppercase letter');
+        }
+
+        if (/[a-z]/.test(password)) {
+            score += 25;
+        } else {
+            feedback.push('One lowercase letter');
+        }
+
+        if (/[0-9]/.test(password)) {
+            score += 15;
+        } else {
+            feedback.push('One number');
+        }
+
+        if (/[^A-Za-z0-9]/.test(password)) {
+            score += 10;
+        } else {
+            feedback.push('One special character');
+        }
+
+        let strength = 'weak';
+        let color = 'danger';
+
+        if (score >= 80) {
+            strength = 'strong';
+            color = 'success';
+        } else if (score >= 60) {
+            strength = 'medium';
+            color = 'warning';
+        }
+
+        return {
+            score,
+            strength,
+            color,
+            feedback,
+            isValid: score >= 60
+        };
+    }
+
+    // ==================== API INTEGRATIONS ====================
+
+    /**
+     * Validate email using external API
+     */
+    async function validateEmail(email) {
+        try {
+            // Simulate API call (replace with actual API)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Demo validation
+            const isValid = isValidEmail(email);
+            const domain = email.split('@')[1];
+            
+            return {
+                valid: isValid,
+                format: isValid ? 'valid' : 'invalid',
+                domain: domain,
+                disposable: domain?.includes('tempmail') || domain?.includes('throwaway'),
+                score: isValid ? 0.85 : 0
+            };
+        } catch (error) {
+            console.error('Email validation error:', error);
+            return {
+                valid: isValidEmail(email),
+                error: 'API unavailable'
+            };
+        }
+    }
+
+    /**
+     * Search cities for autocomplete
+     */
+    async function searchCities(query) {
+        // Mock data for demo
+        const mockCities = [
+            { city: 'New York', country: 'United States' },
+            { city: 'Los Angeles', country: 'United States' },
+            { city: 'Chicago', country: 'United States' },
+            { city: 'Houston', country: 'United States' },
+            { city: 'London', country: 'United Kingdom' },
+            { city: 'Manchester', country: 'United Kingdom' },
+            { city: 'Toronto', country: 'Canada' },
+            { city: 'Vancouver', country: 'Canada' },
+            { city: 'Sydney', country: 'Australia' },
+            { city: 'Melbourne', country: 'Australia' }
+        ];
+
+        return mockCities.filter(c => 
+            c.city.toLowerCase().includes(query.toLowerCase()) ||
+            c.country.toLowerCase().includes(query.toLowerCase())
+        );
+    }
+
+    /**
+     * Generate avatar using DiceBear
+     */
+    function generateAvatar(seed, style = 'avataaars') {
+        return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}`;
+    }
+
+    /**
+     * Initialize Paystack payment
+     */
+    function initializePaystackPayment(email, amount, callback) {
+        const handler = PaystackPop.setup({
+            key: API_CONFIG.paystack.publicKey,
+            email: email,
+            amount: amount * 100, // Convert to kobo
+            currency: 'USD',
+            callback: function(response) {
+                callback({
+                    success: true,
+                    reference: response.reference,
+                    message: 'Payment successful'
+                });
+            },
+            onClose: function() {
+                callback({
+                    success: false,
+                    message: 'Payment window closed'
+                });
+            }
+        });
         
+        handler.openIframe();
+    }
+
+    // ==================== UI HELPERS ====================
+
+    /**
+     * Show toast notification
+     */
+    function showToast(message, type = 'info', duration = 3000) {
+        const toastContainer = document.querySelector('.toast-container') || (() => {
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            return container;
+        })();
+
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type}`;
+        toast.setAttribute('role', 'alert');
         toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                                     type === 'error' ? 'exclamation-circle' : 
-                                     type === 'warning' ? 'exclamation-triangle' : 
-                                     'info-circle'} me-2"></i>
+                                      type === 'error' ? 'exclamation-circle' : 
+                                      type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
                     ${message}
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         `;
-        
-        container.appendChild(toast);
-        
-        // Initialize and show toast
+
+        toastContainer.appendChild(toast);
         const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: duration });
         bsToast.show();
-        
-        // Remove from DOM after hidden
-        toast.addEventListener('hidden.bs.toast', () => {
-            toast.remove();
-        });
+
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
     }
 
-    // Show confirmation dialog
-    async function confirm(message, title = 'Confirm') {
+    /**
+     * Show confirmation dialog
+     */
+    function confirm(message, title = 'Confirm Action') {
         return new Promise((resolve) => {
-            const modalId = 'confirmModal-' + Date.now();
-            
-            // Create modal
-            const modalHtml = `
-                <div class="modal fade" id="${modalId}" tabindex="-1">
+            const modalId = 'confirmModal';
+            let modal = document.getElementById(modalId);
+
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = modalId;
+                modal.className = 'modal fade';
+                modal.innerHTML = `
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -171,29 +270,50 @@ const Utils = (function() {
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            const modal = new bootstrap.Modal(document.getElementById(modalId));
-            
-            document.getElementById('confirmBtn').addEventListener('click', () => {
-                modal.hide();
+                `;
+                document.body.appendChild(modal);
+            }
+
+            const modalInstance = new bootstrap.Modal(modal);
+            document.getElementById('confirmBtn').onclick = () => {
+                modalInstance.hide();
                 resolve(true);
-            });
-            
-            modal.show();
-            
-            // Clean up after hidden
-            document.getElementById(modalId).addEventListener('hidden.bs.modal', () => {
-                document.getElementById(modalId).remove();
-                resolve(false);
-            });
+            };
+
+            modal.addEventListener('hidden.bs.modal', () => resolve(false));
+            modalInstance.show();
         });
     }
 
-    // Export data to Excel
+    /**
+     * Show loading spinner
+     */
+    function showLoading(message = 'Loading...') {
+        const overlay = document.createElement('div');
+        overlay.className = 'spinner-overlay';
+        overlay.id = 'loadingOverlay';
+        overlay.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-white mt-2">${message}</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    /**
+     * Hide loading spinner
+     */
+    function hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.remove();
+    }
+
+    /**
+     * Export data to Excel
+     */
     function exportToExcel(data, filename = 'export') {
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
@@ -201,69 +321,15 @@ const Utils = (function() {
         XLSX.writeFile(wb, `${filename}.xlsx`);
     }
 
-    // Download file
-    function downloadFile(content, filename, type = 'text/plain') {
-        const blob = new Blob([content], { type });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    // Copy to clipboard
-    async function copyToClipboard(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            showToast('Copied to clipboard!', 'success');
-            return true;
-        } catch (error) {
-            console.error('Copy failed:', error);
-            showToast('Failed to copy', 'error');
-            return false;
-        }
-    }
-
-    // Get query parameter
-    function getQueryParam(param) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(param);
-    }
-
-    // Calculate age from birthdate
-    function calculateAge(birthdate) {
-        const today = new Date();
-        const birth = new Date(birthdate);
-        let age = today.getFullYear() - birth.getFullYear();
-        const monthDiff = today.getMonth() - birth.getMonth();
-        
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-            age--;
-        }
-        
-        return age;
-    }
-
-    // Group array by key
-    function groupBy(array, key) {
-        return array.reduce((result, item) => {
-            const groupKey = item[key];
-            if (!result[groupKey]) {
-                result[groupKey] = [];
-            }
-            result[groupKey].push(item);
-            return result;
-        }, {});
-    }
-
-    // Sort array by key
-    function sortBy(array, key, ascending = true) {
-        return [...array].sort((a, b) => {
-            if (a[key] < b[key]) return ascending ? -1 : 1;
-            if (a[key] > b[key]) return ascending ? 1 : -1;
-            return 0;
-        });
+    /**
+     * Debounce function
+     */
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
     }
 
     // Public API
@@ -271,21 +337,20 @@ const Utils = (function() {
         formatCurrency,
         formatDate,
         generateId,
-        debounce,
-        throttle,
-        deepClone,
-        isEqual,
-        sanitizeInput,
         isValidEmail,
-        isValidPhone,
+        checkPasswordStrength,
+        validateEmail,
+        searchCities,
+        generateAvatar,
+        initializePaystackPayment,
         showToast,
         confirm,
+        showLoading,
+        hideLoading,
         exportToExcel,
-        downloadFile,
-        copyToClipboard,
-        getQueryParam,
-        calculateAge,
-        groupBy,
-        sortBy
+        debounce
     };
 })();
+
+// Make utils globally available
+window.Utils = Utils;
