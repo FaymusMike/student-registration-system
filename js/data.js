@@ -768,7 +768,8 @@ const Data = (function() {
     }
 
     function getRegistrationById(registrationId) {
-        return getRegistrations().find(r => r.id === registrationId);
+        const registrations = JSON.parse(localStorage.getItem(STORAGE_KEYS.REGISTRATIONS)) || [];
+        return registrations.find(r => r.id === registrationId);
     }
 
     function createRegistration(registrationData) {

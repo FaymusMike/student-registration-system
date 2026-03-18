@@ -2661,11 +2661,15 @@ const App = (function() {
         `;
     }
 
-    // ==================== ACTION HANDLERS ====================
+    // ==================== FIXED APPROVAL FUNCTIONS ====================
 
     function showApproveModal(registrationId) {
+        console.log('Showing approve modal for:', registrationId); // Debug
         const registration = Data.getRegistrationById(registrationId);
-        if (!registration) return;
+        if (!registration) {
+            Utils.showToast('Registration not found', 'error');
+            return;
+        }
 
         const user = Data.getUserById(registration.studentId);
         const courses = Data.getCourses().filter(c => registration.courses.includes(c.id));
@@ -2674,11 +2678,15 @@ const App = (function() {
         const details = document.getElementById('approvalDetails');
         
         details.innerHTML = `
-            <p class="mb-1"><strong>Student:</strong> ${user?.firstName} ${user?.lastName}</p>
-            <p class="mb-1"><strong>Email:</strong> ${user?.email}</p>
-            <p class="mb-1"><strong>Courses:</strong> ${courses.map(c => c.code).join(', ')}</p>
-            <p class="mb-1"><strong>Total Credits:</strong> ${courses.reduce((sum, c) => sum + c.credits, 0)}</p>
-            <p class="mb-0"><strong>Total Fee:</strong> ${Utils.formatCurrency(registration.totalFees)}</p>
+            <div class="p-3">
+                <p><strong>Student:</strong> ${user?.firstName} ${user?.lastName}</p>
+                <p><strong>Email:</strong> ${user?.email}</p>
+                <p><strong>Student ID:</strong> ${user?.id}</p>
+                <p><strong>Courses:</strong> ${courses.map(c => c.code).join(', ')}</p>
+                <p><strong>Total Credits:</strong> ${courses.reduce((sum, c) => sum + c.credits, 0)}</p>
+                <p><strong>Total Fee:</strong> ${Utils.formatCurrency(registration.totalFees)}</p>
+                <p><strong>Submitted:</strong> ${Utils.formatDate(registration.createdAt)}</p>
+            </div>
         `;
 
         document.getElementById('confirmApproveBtn').setAttribute('data-registration', registrationId);
@@ -2689,44 +2697,86 @@ const App = (function() {
 
     function approveRegistration() {
         const registrationId = document.getElementById('confirmApproveBtn').getAttribute('data-registration');
+        console.log('Approving registration:', registrationId); // Debug
         
         try {
             const registration = Data.getRegistrationById(registrationId);
-            Data.approveRegistration(registrationId, currentUser.id);
-            
-            // Update student status if needed
-            const student = Data.getUserById(registration.studentId);
-            if (student.status === 'pending') {
-                Data.updateUser(student.id, { status: 'active' });
+            if (!registration) {
+                Utils.showToast('Registration not found', 'error');
+                return;
             }
+
+            // Update registration status
+            const registrations = JSON.parse(localStorage.getItem('uniportal_registrations')) || [];
+            const index = registrations.findIndex(r => r.id === registrationId);
             
-            Utils.showToast('Registration approved successfully!', 'success');
-            
-            // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('approvalModal')).hide();
-            
-            // Reload current page
-            const params = new URLSearchParams(window.location.search);
-            const tab = params.get('tab') || 'dashboard';
-            if (tab === 'approvals') {
-                loadApprovalsPage(document.getElementById('dashboardContent'));
-            } else {
-                loadAdminDashboard(document.getElementById('dashboardContent'));
+            if (index !== -1) {
+                registrations[index].status = 'approved';
+                registrations[index].approvedAt = new Date().toISOString();
+                registrations[index].approvedBy = currentUser?.id || 'ADMIN001';
+                
+                localStorage.setItem('uniportal_registrations', JSON.stringify(registrations));
+                
+                // Update student status if needed
+                const users = JSON.parse(localStorage.getItem('uniportal_users')) || [];
+                const studentIndex = users.findIndex(u => u.id === registration.studentId);
+                if (studentIndex !== -1 && users[studentIndex].status === 'pending') {
+                    users[studentIndex].status = 'active';
+                    localStorage.setItem('uniportal_users', JSON.stringify(users));
+                }
+                
+                // Increment course enrollments
+                const courses = JSON.parse(localStorage.getItem('uniportal_courses')) || [];
+                registration.courses.forEach(courseId => {
+                    const courseIndex = courses.findIndex(c => c.id === courseId);
+                    if (courseIndex !== -1) {
+                        courses[courseIndex].enrolled = (courses[courseIndex].enrolled || 0) + 1;
+                    }
+                });
+                localStorage.setItem('uniportal_courses', JSON.stringify(courses));
+                
+                // Create payment record
+                const payments = JSON.parse(localStorage.getItem('uniportal_payments')) || [];
+                const payment = {
+                    id: 'PAY' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                    studentId: registration.studentId,
+                    amount: registration.totalFees,
+                    description: 'Course Registration Fees',
+                    method: 'Pending',
+                    status: 'pending',
+                    createdAt: new Date().toISOString(),
+                    registrationId: registrationId
+                };
+                payments.push(payment);
+                localStorage.setItem('uniportal_payments', JSON.stringify(payments));
+                
+                Utils.showToast('Registration approved successfully!', 'success');
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('approvalModal')).hide();
+                
+                // Reload current page
+                const params = new URLSearchParams(window.location.search);
+                const tab = params.get('tab') || 'dashboard';
+                if (tab === 'approvals') {
+                    loadApprovalsPage(document.getElementById('dashboardContent'));
+                } else {
+                    loadAdminDashboard(document.getElementById('dashboardContent'));
+                }
             }
-            
-            // Refresh notifications
-            loadNotifications(true);
-            updatePendingApprovalsBadge();
-            
         } catch (error) {
-            Utils.showToast(error.message, 'error');
+            console.error('Approval error:', error);
+            Utils.showToast('Error approving registration: ' + error.message, 'error');
         }
     }
 
     function showRejectModal(registrationId) {
+        console.log('Showing reject modal for:', registrationId); // Debug
         document.getElementById('confirmRejectBtn').setAttribute('data-registration', registrationId);
         document.getElementById('rejectReason').value = '';
-        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        
+        const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+        modal.show();
     }
 
     function rejectRegistration() {
@@ -2738,21 +2788,36 @@ const App = (function() {
             return;
         }
         
-        Data.rejectRegistration(registrationId, reason);
-        Utils.showToast('Registration rejected', 'warning');
+        console.log('Rejecting registration:', registrationId, 'Reason:', reason); // Debug
         
-        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
-        
-        // Reload current page
-        const params = new URLSearchParams(window.location.search);
-        const tab = params.get('tab') || 'dashboard';
-        if (tab === 'approvals') {
-            loadApprovalsPage(document.getElementById('dashboardContent'));
-        } else {
-            loadAdminDashboard(document.getElementById('dashboardContent'));
+        try {
+            const registrations = JSON.parse(localStorage.getItem('uniportal_registrations')) || [];
+            const index = registrations.findIndex(r => r.id === registrationId);
+            
+            if (index !== -1) {
+                registrations[index].status = 'rejected';
+                registrations[index].rejectedAt = new Date().toISOString();
+                registrations[index].rejectionReason = reason;
+                
+                localStorage.setItem('uniportal_registrations', JSON.stringify(registrations));
+                
+                Utils.showToast('Registration rejected', 'warning');
+                
+                bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+                
+                // Reload current page
+                const params = new URLSearchParams(window.location.search);
+                const tab = params.get('tab') || 'dashboard';
+                if (tab === 'approvals') {
+                    loadApprovalsPage(document.getElementById('dashboardContent'));
+                } else {
+                    loadAdminDashboard(document.getElementById('dashboardContent'));
+                }
+            }
+        } catch (error) {
+            console.error('Rejection error:', error);
+            Utils.showToast('Error rejecting registration', 'error');
         }
-        
-        updatePendingApprovalsBadge();
     }
 
     function approveStudent(studentId) {
@@ -3230,42 +3295,39 @@ const App = (function() {
 
     // ==================== REGISTRATION ACTIONS ====================
 
-    function viewRegistrationCourses(registrationId) {
-        const registration = Data.getRegistrationById(registrationId);
-        if (!registration) return;
-
-        const courses = Data.getCourses().filter(c => registration.courses.includes(c.id));
-        
-        const courseList = courses.map(c => 
-            `• ${c.code} - ${c.title} (${c.credits} credits) - ${Utils.formatCurrency(c.fee)}`
-        ).join('\n');
-
-        Utils.showAlert({
-            title: 'Selected Courses',
-            message: courseList,
-            type: 'info'
-        });
-    }
-
     function viewRegistrationDetails(registrationId) {
+        console.log('Viewing registration details:', registrationId); // Debug
+        
         const registration = Data.getRegistrationById(registrationId);
-        if (!registration) return;
+        if (!registration) {
+            Utils.showToast('Registration not found', 'error');
+            return;
+        }
 
         const student = Data.getUserById(registration.studentId);
         const courses = Data.getCourses().filter(c => registration.courses.includes(c.id));
 
+        let courseList = '';
+        courses.forEach((course, index) => {
+            courseList += `${index + 1}. ${course.code} - ${course.title} (${course.credits} credits) - ${Utils.formatCurrency(course.fee)}<br>`;
+        });
+
         const message = `
-            <strong>Student:</strong> ${student?.firstName} ${student?.lastName}<br>
-            <strong>Student ID:</strong> ${student?.id}<br>
-            <strong>Email:</strong> ${student?.email}<br>
-            <strong>Registration ID:</strong> ${registration.id}<br>
-            <strong>Submitted:</strong> ${Utils.formatDate(registration.createdAt, 'long')}<br>
-            <strong>Status:</strong> ${registration.status}<br>
-            <strong>Total Courses:</strong> ${courses.length}<br>
-            <strong>Total Credits:</strong> ${courses.reduce((sum, c) => sum + c.credits, 0)}<br>
-            <strong>Total Fees:</strong> ${Utils.formatCurrency(registration.totalFees)}<br><br>
-            <strong>Selected Courses:</strong><br>
-            ${courses.map(c => `• ${c.code} - ${c.title}`).join('<br>')}
+            <div class="p-2">
+                <p><strong>Registration ID:</strong> ${registration.id}</p>
+                <p><strong>Student:</strong> ${student?.firstName} ${student?.lastName} (${student?.id})</p>
+                <p><strong>Email:</strong> ${student?.email}</p>
+                <p><strong>Status:</strong> <span class="badge bg-${registration.status === 'pending' ? 'warning' : registration.status === 'approved' ? 'success' : 'danger'}">${registration.status}</span></p>
+                <p><strong>Submitted:</strong> ${Utils.formatDate(registration.createdAt, 'long')}</p>
+                <hr>
+                <p><strong>Selected Courses:</strong></p>
+                <p>${courseList}</p>
+                <hr>
+                <p><strong>Total Credits:</strong> ${courses.reduce((sum, c) => sum + c.credits, 0)}</p>
+                <p><strong>Total Fees:</strong> ${Utils.formatCurrency(registration.totalFees)}</p>
+                ${registration.approvedAt ? `<p><strong>Approved At:</strong> ${Utils.formatDate(registration.approvedAt, 'long')}</p>` : ''}
+                ${registration.rejectionReason ? `<p><strong>Rejection Reason:</strong> ${registration.rejectionReason}</p>` : ''}
+            </div>
         `;
 
         Utils.showAlert({
@@ -3430,6 +3492,11 @@ const App = (function() {
         const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
         if (!revenueCtx) return;
 
+        // Destroy existing chart if any
+        if (charts.revenue) {
+            charts.revenue.destroy();
+        }
+
         // Generate last 6 months data
         const months = [];
         const revenueData = [];
@@ -3437,9 +3504,7 @@ const App = (function() {
             const d = new Date();
             d.setMonth(d.getMonth() - i);
             months.push(d.toLocaleString('default', { month: 'short' }));
-            
-            // Generate realistic revenue data (between 20000 and 80000)
-            revenueData.push(Math.floor(Math.random() * 60000) + 20000);
+            revenueData.push(Math.floor(Math.random() * 50000) + 20000);
         }
 
         charts.revenue = new Chart(revenueCtx, {

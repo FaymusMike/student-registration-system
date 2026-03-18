@@ -277,6 +277,49 @@ body.dark-mode .form-container {
     to { transform: translateX(0); }
 }
 
+
+/* Fix chart container size */
+.chart-container {
+    position: relative;
+    height: 300px !important;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.chart-container canvas {
+    max-height: 300px !important;
+    min-height: 300px !important;
+    height: 300px !important;
+    width: 100% !important;
+}
+
+/* Fix stat cards layout */
+.stat-card {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+}
+
+.stat-card .stat-icon {
+    font-size: 2.5rem;
+}
+
+/* Fix table containers */
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+/* Fix dashboard layout */
+.main-content {
+    min-height: 100vh;
+    padding-bottom: 20px;
+}
+
+.dashboard-wrapper {
+    min-height: 100vh;
+}
+
 /* Print Styles */
 @media print {
     .no-print {
