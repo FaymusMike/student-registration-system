@@ -414,6 +414,19 @@ const Data = (function() {
         return null;
     }
 
+    function updateUserStatus(userId, status) {
+        const users = getUsers();
+        const index = users.findIndex(u => u.id === userId);
+        
+        if (index !== -1) {
+            users[index].status = status;
+            users[index].updatedAt = new Date().toISOString();
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+            return users[index];
+        }
+        return null;
+    }
+
     function deleteUser(userId) {
         const users = getUsers().filter(u => u.id !== userId);
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
@@ -823,77 +836,106 @@ const Data = (function() {
         return newRegistration;
     }
 
-    function approveRegistration(registrationId, adminId) {
-        const registrations = getRegistrations();
-        const index = registrations.findIndex(r => r.id === registrationId);
+    function approveRegistration() {
+        const registrationId = document.getElementById('confirmApproveBtn').getAttribute('data-registration');
+        console.log('Approving registration:', registrationId);
         
-        if (index !== -1) {
-            registrations[index].status = 'approved';
-            registrations[index].approvedBy = adminId;
-            registrations[index].approvedAt = new Date().toISOString();
+        try {
+            const registration = Data.getRegistrationById(registrationId);
+            if (!registration) {
+                Utils.showToast('Registration not found', 'error');
+                return;
+            }
+
+            // Update registration status
+            Data.updateRegistrationStatus(registrationId, 'approved');
             
-            localStorage.setItem(STORAGE_KEYS.REGISTRATIONS, JSON.stringify(registrations));
+            // Update student status if needed
+            const student = Data.getUserById(registration.studentId);
+            if (student && student.status === 'pending') {
+                Data.updateUserStatus(registration.studentId, 'active');
+            }
             
             // Increment course enrollments
-            registrations[index].courses.forEach(courseId => {
-                incrementCourseEnrollment(courseId);
+            registration.courses.forEach(courseId => {
+                const course = Data.getCourseById(courseId);
+                if (course) {
+                    Data.updateCourse(courseId, { 
+                        enrolled: (course.enrolled || 0) + 1 
+                    });
+                }
             });
-            
-            // Create notification for student
-            createNotification(
-                registrations[index].studentId,
-                'registration_approved',
-                'Your course registration has been approved!',
-                { registrationId }
-            );
             
             // Create payment record
-            createPayment({
-                studentId: registrations[index].studentId,
-                amount: registrations[index].totalFees,
+            Data.createPayment({
+                studentId: registration.studentId,
+                amount: registration.totalFees,
                 description: 'Course Registration Fees',
-                method: 'Pending'
+                method: 'Pending',
+                status: 'pending',
+                registrationId: registrationId
             });
             
-            addAuditLog('registration_approved', adminId, { 
-                registrationId,
-                studentId: registrations[index].studentId 
-            });
+            Utils.showToast('Registration approved successfully!', 'success');
             
-            return registrations[index];
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('approvalModal')).hide();
+            
+            // Reload current page
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab') || 'dashboard';
+            if (tab === 'approvals') {
+                loadApprovalsPage(document.getElementById('dashboardContent'));
+            } else {
+                loadAdminDashboard(document.getElementById('dashboardContent'));
+            }
+            
+        } catch (error) {
+            console.error('Approval error:', error);
+            Utils.showToast('Error approving registration: ' + error.message, 'error');
         }
-        return null;
     }
 
-    function rejectRegistration(registrationId, adminId, reason) {
-        const registrations = getRegistrations();
-        const index = registrations.findIndex(r => r.id === registrationId);
+    function rejectRegistration() {
+        const registrationId = document.getElementById('confirmRejectBtn').getAttribute('data-registration');
+        const reason = document.getElementById('rejectReason').value;
         
-        if (index !== -1) {
-            registrations[index].status = 'rejected';
-            registrations[index].approvedBy = adminId;
-            registrations[index].rejectedAt = new Date().toISOString();
-            registrations[index].rejectionReason = reason;
-            
-            localStorage.setItem(STORAGE_KEYS.REGISTRATIONS, JSON.stringify(registrations));
-            
-            // Create notification for student
-            createNotification(
-                registrations[index].studentId,
-                'registration_rejected',
-                `Your course registration was rejected. Reason: ${reason}`,
-                { registrationId, reason }
-            );
-            
-            addAuditLog('registration_rejected', adminId, { 
-                registrationId,
-                studentId: registrations[index].studentId,
-                reason 
-            });
-            
-            return registrations[index];
+        if (!reason.trim()) {
+            Utils.showToast('Please provide a reason for rejection', 'warning');
+            return;
         }
-        return null;
+        
+        console.log('Rejecting registration:', registrationId, 'Reason:', reason);
+        
+        try {
+            // Update registration status with rejection reason
+            const registrations = JSON.parse(localStorage.getItem('uniportal_registrations')) || [];
+            const index = registrations.findIndex(r => r.id === registrationId);
+            
+            if (index !== -1) {
+                registrations[index].status = 'rejected';
+                registrations[index].rejectedAt = new Date().toISOString();
+                registrations[index].rejectionReason = reason;
+                
+                localStorage.setItem('uniportal_registrations', JSON.stringify(registrations));
+                
+                Utils.showToast('Registration rejected', 'warning');
+                
+                bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+                
+                // Reload current page
+                const params = new URLSearchParams(window.location.search);
+                const tab = params.get('tab') || 'dashboard';
+                if (tab === 'approvals') {
+                    loadApprovalsPage(document.getElementById('dashboardContent'));
+                } else {
+                    loadAdminDashboard(document.getElementById('dashboardContent'));
+                }
+            }
+        } catch (error) {
+            console.error('Rejection error:', error);
+            Utils.showToast('Error rejecting registration', 'error');
+        }
     }
 
     function getRegistrationStats() {
@@ -1092,6 +1134,7 @@ const Data = (function() {
         getUserByEmail,
         createUser,
         updateUser,
+        updateUserStatus,
         deleteUser,
         approveStudent,
         rejectStudent,

@@ -3295,8 +3295,12 @@ const App = (function() {
 
     // ==================== REGISTRATION ACTIONS ====================
 
+    /**
+     * View registration details
+     * @param {string} registrationId - Registration ID
+     */
     function viewRegistrationDetails(registrationId) {
-        console.log('Viewing registration details:', registrationId); // Debug
+        console.log('Viewing registration details:', registrationId);
         
         const registration = Data.getRegistrationById(registrationId);
         if (!registration) {
@@ -3333,6 +3337,39 @@ const App = (function() {
         Utils.showAlert({
             title: 'Registration Details',
             message: message,
+            type: 'info'
+        });
+    }
+
+        /**
+     * View courses in a registration
+     * @param {string} registrationId - Registration ID
+     */
+    function viewRegistrationCourses(registrationId) {
+        console.log('Viewing courses for registration:', registrationId);
+        
+        const registration = Data.getRegistrationById(registrationId);
+        if (!registration) {
+            Utils.showToast('Registration not found', 'error');
+            return;
+        }
+
+        const courses = Data.getCourses().filter(c => registration.courses.includes(c.id));
+        
+        let courseList = '<ul class="list-group">';
+        courses.forEach(course => {
+            courseList += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${course.code} - ${course.title}
+                    <span class="badge bg-primary rounded-pill">${course.credits} credits</span>
+                </li>
+            `;
+        });
+        courseList += '</ul>';
+
+        Utils.showAlert({
+            title: 'Selected Courses',
+            message: courseList,
             type: 'info'
         });
     }
@@ -3583,14 +3620,12 @@ const App = (function() {
     // Initialize on load
     document.addEventListener('DOMContentLoaded', init);
 
-    // Public API
+    // ==================== PUBLIC API ====================
     return {
         // Core
         renderSidebar,
         loadNotifications,
         markAllNotificationsRead,
-        
-        // Navigation
         loadAdminContent,
         loadStudentContent,
         
@@ -3608,15 +3643,15 @@ const App = (function() {
         processPayment,
         retryPayment,
         
-        // Admin functions - Approvals
+        // Admin functions - Approvals (CRITICAL)
         showApproveModal,
         approveRegistration,
         showRejectModal,
         rejectRegistration,
         approveStudent,
         rejectStudent,
-        viewRegistrationCourses,
-        viewRegistrationDetails,
+        viewRegistrationCourses,      // <-- ADD THIS
+        viewRegistrationDetails,       // <-- ADD THIS
         
         // Admin functions - Students
         toggleStudentStatus,
@@ -3655,7 +3690,15 @@ const App = (function() {
         exportSystemBackup,
         
         // Chart functions
-        updateChartPeriod
+        updateChartPeriod,
+        
+        // Profile function
+        loadProfile: function() {
+            window.location.href = 'dashboard.html?tab=profile';
+        },
+        loadSettings: function() {
+            window.location.href = 'dashboard.html?tab=settings';
+        }
     };
 })();
 
