@@ -29,7 +29,9 @@ const Auth = (function() {
                 Utils.hideLoading();
                 
                 // Log failed attempt
-                Data.addAuditLog('login_failed', user.id, { email });
+                if (Data.addAuditLog) {
+                    Data.addAuditLog('login_failed', user.id, { email });
+                }
                 
                 return { 
                     success: false, 
@@ -66,7 +68,9 @@ const Auth = (function() {
             const session = Data.createSession(user);
             
             // Log successful login
-            Data.addAuditLog('login_success', user.id, { email });
+            if (Data.addAuditLog) {
+                Data.addAuditLog('login_success', user.id, { email });
+            }
             
             Utils.hideLoading();
             
@@ -173,9 +177,18 @@ const Auth = (function() {
         const session = Data.getSession();
         
         if (!session) {
-            window.location.href = 'login.html';
+            // Don't redirect if on public pages
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const publicPages = ['login.html', 'register.html', 'index.html'];
+            
+            if (!publicPages.includes(currentPage)) {
+                window.location.href = 'login.html';
+            }
             return false;
         }
+        
+        // Check if session expired (optional - you can implement expiration)
+        // For now, just return true
         
         if (requiredRole && session.role !== requiredRole) {
             // Redirect to appropriate dashboard

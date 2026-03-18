@@ -516,6 +516,11 @@ const App = (function() {
     // ==================== STUDENT CONTENT ====================
 
     function loadStudentContent(tab, container) {
+        if (!currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
         switch(tab) {
             case 'profile':
                 loadStudentProfile(container);
@@ -778,6 +783,11 @@ const App = (function() {
     // ==================== STUDENT DASHBOARD ====================
 
     function loadStudentDashboard(container) {
+        if (!currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
         const payments = Data.getPayments({ studentId: currentUser.id });
         const registrations = Data.getRegistrations({ studentId: currentUser.id });
         const courses = Data.getCourses();
@@ -876,37 +886,6 @@ const App = (function() {
                                     Pay Now
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="table-container">
-                            <h5 class="mb-3">Recent Activity</h5>
-                            <table class="table">
-                                <tbody>
-                                    ${payments.slice(0, 3).map(p => `
-                                        <tr>
-                                            <td><i class="fas fa-credit-card text-success me-2"></i>Payment</td>
-                                            <td>${Utils.formatCurrency(p.amount)}</td>
-                                            <td>${Utils.formatDate(p.createdAt)}</td>
-                                            <td><span class="badge bg-success">${p.status}</span></td>
-                                        </tr>
-                                    `).join('')}
-                                    ${registrations.slice(0, 2).map(r => `
-                                        <tr>
-                                            <td><i class="fas fa-book text-info me-2"></i>Registration</td>
-                                            <td>${r.courses.length} courses</td>
-                                            <td>${Utils.formatDate(r.createdAt)}</td>
-                                            <td><span class="badge bg-${r.status === 'approved' ? 'success' : 'warning'}">${r.status}</span></td>
-                                        </tr>
-                                    `).join('')}
-                                    ${payments.length === 0 && registrations.length === 0 ? 
-                                        '<tr><td colspan="4" class="text-center text-muted py-4">No recent activity</td></tr>' : ''}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -1536,13 +1515,13 @@ const App = (function() {
 
         // Initialize DataTable
         setTimeout(() => {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#paymentHistoryTable').DataTable({
-                    pageLength: 10,
-                    order: [[4, 'desc']],
-                    columnDefs: [{ orderable: false, targets: 6 }]
-                });
-            }
+            Utils.initializeDataTable('#paymentHistoryTable', {
+                pageLength: 10,
+                order: [[4, 'desc']], // Sort by date
+                columnDefs: [
+                    { orderable: false, targets: 6 } // Actions column
+                ]
+            });
         }, 100);
     }
 
@@ -1719,17 +1698,13 @@ const App = (function() {
 
         // Initialize DataTable
         setTimeout(() => {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#studentsTable').DataTable({
-                    pageLength: 10,
-                    responsive: true,
-                    searching: true,
-                    ordering: true,
-                    columnDefs: [
-                        { orderable: false, targets: 8 }
-                    ]
-                });
-            }
+            Utils.initializeDataTable('#studentsTable', {
+                pageLength: 10,
+                order: [[0, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: 8 } // Actions column
+                ]
+            });
         }, 100);
     }
 
@@ -1859,7 +1834,7 @@ const App = (function() {
                     <!-- Students Tab -->
                     <div class="tab-pane fade" id="students">
                         <div class="table-container">
-                            <table class="table table-hover" id="studentsTable">
+                            <table class="table table-hover" id="pendingStudentsTable">
                                 <thead>
                                     <tr>
                                         <th>Student</th>
@@ -1907,20 +1882,22 @@ const App = (function() {
             </div>
         `;
 
-        // Initialize DataTables
         setTimeout(() => {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#registrationsTable').DataTable({
-                    pageLength: 10,
-                    order: [[5, 'desc']],
-                    columnDefs: [{ orderable: false, targets: 6 }]
-                });
-                $('#studentsTable').DataTable({
-                    pageLength: 10,
-                    order: [[4, 'desc']],
-                    columnDefs: [{ orderable: false, targets: 5 }]
-                });
-            }
+            // Initialize registrations table
+            Utils.initializeDataTable('#registrationsTable', {
+                order: [[5, 'desc']], // Sort by date column (index 5) descending
+                columnDefs: [
+                    { orderable: false, targets: 6 } // Disable sorting on actions column
+                ]
+            });
+            
+            // Initialize pending students table
+            Utils.initializeDataTable('#pendingStudentsTable', {
+                order: [[4, 'desc']], // Sort by date column (index 4) descending
+                columnDefs: [
+                    { orderable: false, targets: 5 } // Disable sorting on actions column
+                ]
+            });
         }, 100);
     }
 
@@ -2070,13 +2047,13 @@ const App = (function() {
 
         // Initialize DataTable
         setTimeout(() => {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#coursesTable').DataTable({
-                    pageLength: 10,
-                    order: [[0, 'asc']],
-                    columnDefs: [{ orderable: false, targets: 9 }]
-                });
-            }
+            Utils.initializeDataTable('#coursesTable', {
+                pageLength: 10,
+                order: [[0, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: 9 } // Actions column
+                ]
+            });
         }, 100);
     }
 
@@ -2231,13 +2208,13 @@ const App = (function() {
 
         // Initialize DataTable
         setTimeout(() => {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#paymentsTable').DataTable({
-                    pageLength: 10,
-                    order: [[5, 'desc']],
-                    columnDefs: [{ orderable: false, targets: 7 }]
-                });
-            }
+            Utils.initializeDataTable('#paymentsTable', {
+                pageLength: 10,
+                order: [[5, 'desc']], // Sort by date
+                columnDefs: [
+                    { orderable: false, targets: 7 } // Actions column
+                ]
+            });
         }, 100);
     }
 

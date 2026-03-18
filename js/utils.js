@@ -793,6 +793,77 @@ const Utils = (function() {
         });
     }
 
+
+    // ==================== DATATABLE HELPER ====================
+
+    /**
+     * Initialize DataTable safely without reinitialization errors
+     * @param {string} tableId - ID of the table (e.g., '#registrationsTable')
+     * @param {object} options - DataTable options
+     * @returns {object|null} DataTable instance or null
+     */
+    function initializeDataTable(tableId, options = {}) {
+        // Check if jQuery and DataTables are available
+        if (typeof $ === 'undefined' || !$.fn || !$.fn.DataTable) {
+            console.warn('jQuery or DataTables not available');
+            return null;
+        }
+        
+        // Check if table exists
+        const tableElement = $(tableId);
+        if (tableElement.length === 0) {
+            console.warn(`Table ${tableId} not found`);
+            return null;
+        }
+        
+        // Destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable(tableId)) {
+            try {
+                $(tableId).DataTable().destroy();
+            } catch (e) {
+                console.warn('Error destroying existing DataTable:', e);
+            }
+        }
+        
+        // Remove any lingering DataTable wrapper
+        tableElement.removeClass('dataTable');
+        
+        // Default options
+        const defaultOptions = {
+            pageLength: 10,
+            responsive: true,
+            retrieve: false,
+            destroy: true,
+            language: {
+                emptyTable: 'No data available',
+                info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                infoEmpty: 'Showing 0 to 0 of 0 entries',
+                infoFiltered: '(filtered from _MAX_ total entries)',
+                lengthMenu: 'Show _MENU_ entries',
+                search: 'Search:',
+                zeroRecords: 'No matching records found',
+                paginate: {
+                    first: 'First',
+                    last: 'Last',
+                    next: 'Next',
+                    previous: 'Previous'
+                }
+            }
+        };
+        
+        // Merge options
+        const mergedOptions = { ...defaultOptions, ...options };
+        
+        // Initialize DataTable
+        try {
+            return $(tableId).DataTable(mergedOptions);
+        } catch (error) {
+            console.error('DataTable initialization error:', error);
+            return null;
+        }
+    }
+
+
     // ==================== PUBLIC API ====================
 
     return {
@@ -822,6 +893,9 @@ const Utils = (function() {
         showAlert,
         showLoading,
         hideLoading,
+
+        // DataTable helper
+        initializeDataTable,
         
         // Export
         exportToExcel,

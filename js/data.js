@@ -1074,7 +1074,7 @@ const Data = (function() {
             email: user.email,
             avatar: user.avatar,
             createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 24*60*60*1000).toISOString() // 24 hours
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
         };
         
         sessionStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
@@ -1089,15 +1089,19 @@ const Data = (function() {
         const session = sessionStorage.getItem(STORAGE_KEYS.SESSION);
         if (!session) return null;
         
-        const parsed = JSON.parse(session);
-        
-        // Check if session expired
-        if (new Date(parsed.expiresAt) < new Date()) {
-            destroySession();
+        try {
+            const parsed = JSON.parse(session);
+            
+            // Check if session expired (optional)
+            if (parsed.expiresAt && new Date(parsed.expiresAt) < new Date()) {
+                destroySession();
+                return null;
+            }
+            
+            return parsed;
+        } catch (e) {
             return null;
         }
-        
-        return parsed;
     }
 
     function destroySession() {
