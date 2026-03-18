@@ -795,7 +795,7 @@ const Utils = (function() {
 
 
     // ==================== DATATABLE HELPER ====================
-
+    
     /**
      * Initialize DataTable safely without reinitialization errors
      * @param {string} tableId - ID of the table (e.g., '#registrationsTable')
@@ -809,58 +809,106 @@ const Utils = (function() {
             return null;
         }
         
-        // Check if table exists
+        // Check if table exists in DOM
         const tableElement = $(tableId);
         if (tableElement.length === 0) {
-            console.warn(`Table ${tableId} not found`);
+            console.warn(`Table ${tableId} not found in DOM`);
             return null;
         }
         
-        // Destroy existing DataTable if it exists
-        if ($.fn.DataTable.isDataTable(tableId)) {
+        // Wait a bit to ensure DOM is fully ready
+        setTimeout(() => {
             try {
-                $(tableId).DataTable().destroy();
-            } catch (e) {
-                console.warn('Error destroying existing DataTable:', e);
-            }
-        }
-        
-        // Remove any lingering DataTable wrapper
-        tableElement.removeClass('dataTable');
-        
-        // Default options
-        const defaultOptions = {
-            pageLength: 10,
-            responsive: true,
-            retrieve: false,
-            destroy: true,
-            language: {
-                emptyTable: 'No data available',
-                info: 'Showing _START_ to _END_ of _TOTAL_ entries',
-                infoEmpty: 'Showing 0 to 0 of 0 entries',
-                infoFiltered: '(filtered from _MAX_ total entries)',
-                lengthMenu: 'Show _MENU_ entries',
-                search: 'Search:',
-                zeroRecords: 'No matching records found',
-                paginate: {
-                    first: 'First',
-                    last: 'Last',
-                    next: 'Next',
-                    previous: 'Previous'
+                // Safe way to check if DataTable exists
+                let isDataTable = false;
+                try {
+                    isDataTable = $.fn.DataTable.isDataTable(tableId);
+                } catch (e) {
+                    console.warn('Error checking DataTable status:', e);
+                }
+                
+                // If it exists, try to destroy it safely
+                if (isDataTable) {
+                    try {
+                        const existingTable = $(tableId).DataTable();
+                        if (existingTable && typeof existingTable.destroy === 'function') {
+                            existingTable.destroy();
+                        }
+                    } catch (e) {
+                        console.warn('Error destroying existing DataTable:', e);
+                    }
+                }
+                
+                // Remove any DataTable classes and attributes manually
+                tableElement.removeClass('dataTable');
+                tableElement.removeAttr('style');
+                tableElement.find('thead tr').removeClass('odd even');
+                tableElement.find('tbody tr').removeClass('odd even');
+                
+                // Remove any wrapper elements that DataTable might have created
+                const wrapper = tableElement.closest('.dataTables_wrapper');
+                if (wrapper.length > 0) {
+                    wrapper.find('.dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_paginate').remove();
+                    wrapper.contents().unwrap();
+                }
+                
+                // Default options
+                const defaultOptions = {
+                    pageLength: 10,
+                    responsive: true,
+                    retrieve: false,
+                    destroy: true,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    autoWidth: false,
+                    language: {
+                        emptyTable: 'No data available',
+                        info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                        infoEmpty: 'Showing 0 to 0 of 0 entries',
+                        infoFiltered: '(filtered from _MAX_ total entries)',
+                        lengthMenu: 'Show _MENU_ entries',
+                        search: 'Search:',
+                        zeroRecords: 'No matching records found',
+                        paginate: {
+                            first: 'First',
+                            last: 'Last',
+                            next: 'Next',
+                            previous: 'Previous'
+                        }
+                    }
+                };
+                
+                // Merge options
+                const mergedOptions = { ...defaultOptions, ...options };
+                
+                // Initialize new DataTable
+                const newTable = $(tableId).DataTable(mergedOptions);
+                console.log(`✅ DataTable initialized for ${tableId}`);
+                return newTable;
+                
+            } catch (error) {
+                console.error(`❌ DataTable initialization error for ${tableId}:`, error);
+                
+                // Fallback: try one more time with minimal options
+                try {
+                    console.log('Attempting fallback initialization...');
+                    $(tableId).removeAttr('style').removeClass('dataTable');
+                    return $(tableId).DataTable({
+                        pageLength: 10,
+                        paging: true,
+                        searching: true,
+                        ordering: true
+                    });
+                } catch (fallbackError) {
+                    console.error('Fallback also failed:', fallbackError);
+                    return null;
                 }
             }
-        };
+        }, 200); // Increased timeout to 200ms
         
-        // Merge options
-        const mergedOptions = { ...defaultOptions, ...options };
-        
-        // Initialize DataTable
-        try {
-            return $(tableId).DataTable(mergedOptions);
-        } catch (error) {
-            console.error('DataTable initialization error:', error);
-            return null;
-        }
+        return null;
     }
 
 

@@ -1885,20 +1885,33 @@ const App = (function() {
         setTimeout(() => {
             // Initialize registrations table
             Utils.initializeDataTable('#registrationsTable', {
-                order: [[5, 'desc']], // Sort by date column (index 5) descending
+                order: [[5, 'desc']],
                 columnDefs: [
-                    { orderable: false, targets: 6 } // Disable sorting on actions column
+                    { orderable: false, targets: 6 },
+                    { width: '15%', targets: 0 },
+                    { width: '20%', targets: 1 },
+                    { width: '15%', targets: 2 },
+                    { width: '10%', targets: 3 },
+                    { width: '10%', targets: 4 },
+                    { width: '15%', targets: 5 },
+                    { width: '15%', targets: 6 }
                 ]
             });
             
             // Initialize pending students table
             Utils.initializeDataTable('#pendingStudentsTable', {
-                order: [[4, 'desc']], // Sort by date column (index 4) descending
+                order: [[4, 'desc']],
                 columnDefs: [
-                    { orderable: false, targets: 5 } // Disable sorting on actions column
+                    { orderable: false, targets: 5 },
+                    { width: '20%', targets: 0 },
+                    { width: '20%', targets: 1 },
+                    { width: '15%', targets: 2 },
+                    { width: '20%', targets: 3 },
+                    { width: '15%', targets: 4 },
+                    { width: '10%', targets: 5 }
                 ]
             });
-        }, 100);
+        }, 300);
     }
 
     // ==================== COURSE MANAGEMENT ====================
