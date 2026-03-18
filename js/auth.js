@@ -1,33 +1,13 @@
 /**
  * UniPortal - Complete Authentication Module
- * Production-ready with session management, security, and audit trails
+ * Handles all auth operations with proper security
  */
 
 const Auth = (function() {
-    // ==================== CONSTANTS ====================
-    const MAX_LOGIN_ATTEMPTS = 5;
-    const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
-
-    // ==================== STATE ====================
-    let loginAttempts = {};
-
     // ==================== AUTHENTICATION ====================
 
-    /**
-     * Login user with security measures
-     */
-    async function login(email, password, remember = false) {
+    async function login(email, password) {
         try {
-            // Check for lockout
-            if (isLockedOut(email)) {
-                const lockoutExpiry = loginAttempts[email].lockoutUntil;
-                const minutesLeft = Math.ceil((lockoutExpiry - Date.now()) / 60000);
-                return {
-                    success: false,
-                    message: `Too many failed attempts. Please try again in ${minutesLeft} minutes.`
-                };
-            }
-
             Utils.showLoading('Authenticating...');
             
             // Simulate network delay
@@ -36,27 +16,36 @@ const Auth = (function() {
             const users = Data.getUsers();
             const user = users.find(u => u.email === email);
             
-            // User not found
             if (!user) {
-                recordFailedAttempt(email);
                 Utils.hideLoading();
                 return { 
                     success: false, 
-                    message: 'Invalid email or password' 
+                    message: 'User not found. Please check your email.' 
                 };
             }
             
-            // Check password (demo only - use proper hashing in production)
+            // Check password (demo only - use proper hashing)
             if (btoa(password) !== user.password) {
-                recordFailedAttempt(email);
                 Utils.hideLoading();
+                
+                // Log failed attempt
+                Data.addAuditLog('login_failed', user.id, { email });
+                
                 return { 
                     success: false, 
-                    message: 'Invalid email or password' 
+                    message: 'Invalid password. Please try again.' 
                 };
             }
             
             // Check account status
+            if (user.status === 'pending') {
+                Utils.hideLoading();
+                return { 
+                    success: false, 
+                    message: 'Your account is pending approval. You will be notified once approved.' 
+                };
+            }
+            
             if (user.status === 'suspended') {
                 Utils.hideLoading();
                 return { 
@@ -65,31 +54,25 @@ const Auth = (function() {
                 };
             }
             
-            if (user.status === 'pending' && user.role === 'student') {
+            if (user.status === 'rejected') {
                 Utils.hideLoading();
                 return { 
                     success: false, 
-                    message: 'Your account is pending approval. Please wait for admin confirmation.' 
+                    message: 'Your account application was rejected. Please contact support.' 
                 };
             }
             
-            // Clear failed attempts on successful login
-            delete loginAttempts[email];
-            
-            // Create session with expiry
+            // Create session
             const session = Data.createSession(user);
             
-            // Set remember me cookie if requested
-            if (remember) {
-                setRememberMeCookie(email);
-            }
+            // Log successful login
+            Data.addAuditLog('login_success', user.id, { email });
             
             Utils.hideLoading();
-            Utils.showToast(`Welcome back, ${user.firstName}!`, 'success');
             
             return {
                 success: true,
-                message: 'Login successful',
+                message: 'Login successful! Redirecting...',
                 user,
                 session,
                 redirect: user.role === 'admin' ? 'dashboard.html' : 'dashboard.html'
@@ -100,92 +83,13 @@ const Auth = (function() {
             console.error('Login error:', error);
             return { 
                 success: false, 
-                message: 'An error occurred during login. Please try again.' 
+                message: 'Login failed. Please try again later.' 
             };
         }
     }
 
-    /**
-     * Record failed login attempt
-     */
-    function recordFailedAttempt(email) {
-        if (!loginAttempts[email]) {
-            loginAttempts[email] = {
-                count: 1,
-                firstAttempt: Date.now()
-            };
-        } else {
-            loginAttempts[email].count++;
-            
-            // Check if should lock out
-            if (loginAttempts[email].count >= MAX_LOGIN_ATTEMPTS) {
-                loginAttempts[email].lockoutUntil = Date.now() + LOCKOUT_TIME;
-            }
-        }
-    }
-
-    /**
-     * Check if user is locked out
-     */
-    function isLockedOut(email) {
-        const attempts = loginAttempts[email];
-        if (!attempts || !attempts.lockoutUntil) return false;
-        
-        if (Date.now() > attempts.lockoutUntil) {
-            // Lockout expired
-            delete loginAttempts[email];
-            return false;
-        }
-        
-        return true;
-    }
-
-    /**
-     * Set remember me cookie
-     */
-    function setRememberMeCookie(email) {
-        const expiry = new Date();
-        expiry.setDate(expiry.getDate() + 30); // 30 days
-        document.cookie = `remember_email=${email}; expires=${expiry.toUTCString()}; path=/`;
-    }
-
-    /**
-     * Get remember me email
-     */
-    function getRememberedEmail() {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'remember_email') {
-                return value;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Clear remember me cookie
-     */
-    function clearRememberMe() {
-        document.cookie = 'remember_email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    }
-
-    /**
-     * Register new student with validation
-     */
     async function register(userData) {
         try {
-            // Validate required fields
-            const required = ['firstName', 'lastName', 'email', 'password', 'phone'];
-            for (let field of required) {
-                if (!userData[field]) {
-                    return { 
-                        success: false, 
-                        message: `${field} is required` 
-                    };
-                }
-            }
-
             Utils.showLoading('Creating your account...');
             
             // Validate email format
@@ -193,17 +97,7 @@ const Auth = (function() {
                 Utils.hideLoading();
                 return { 
                     success: false, 
-                    message: 'Please enter a valid email address' 
-                };
-            }
-            
-            // Validate email via API
-            const emailValid = await Utils.validateEmail(userData.email);
-            if (!emailValid.valid) {
-                Utils.hideLoading();
-                return { 
-                    success: false, 
-                    message: 'Invalid or disposable email address' 
+                    message: 'Please enter a valid email address.' 
                 };
             }
             
@@ -213,7 +107,16 @@ const Auth = (function() {
                 Utils.hideLoading();
                 return { 
                     success: false, 
-                    message: 'Email already registered' 
+                    message: 'This email is already registered. Please login instead.' 
+                };
+            }
+            
+            // Validate phone number
+            if (!Utils.isValidPhone(userData.phone)) {
+                Utils.hideLoading();
+                return { 
+                    success: false, 
+                    message: 'Please enter a valid phone number.' 
                 };
             }
             
@@ -223,17 +126,8 @@ const Auth = (function() {
                 Utils.hideLoading();
                 return {
                     success: false,
-                    message: 'Password is too weak',
+                    message: 'Password is too weak.',
                     feedback: passwordCheck.feedback
-                };
-            }
-            
-            // Validate phone number
-            if (!Utils.isValidPhone(userData.phone)) {
-                Utils.hideLoading();
-                return {
-                    success: false,
-                    message: 'Please enter a valid phone number'
                 };
             }
             
@@ -241,14 +135,10 @@ const Auth = (function() {
             const newUser = Data.createUser(userData);
             
             Utils.hideLoading();
-            Utils.showToast('Registration successful! Please check your email for verification.', 'success');
-            
-            // Send verification email (simulated)
-            sendVerificationEmail(newUser.email);
             
             return {
                 success: true,
-                message: 'Registration successful',
+                message: 'Registration successful! Your account is pending approval.',
                 user: newUser
             };
             
@@ -257,35 +147,21 @@ const Auth = (function() {
             console.error('Registration error:', error);
             return { 
                 success: false, 
-                message: error.message || 'Registration failed' 
+                message: 'Registration failed. Please try again.' 
             };
         }
     }
 
-    /**
-     * Send verification email (simulated)
-     */
-    function sendVerificationEmail(email) {
-        console.log(`Verification email sent to ${email}`);
-        // In production, integrate with email service
-    }
-
-    /**
-     * Logout user
-     */
     function logout() {
-        const user = getCurrentUser();
-        if (user) {
-            Utils.showToast(`Goodbye, ${user.firstName}!`, 'info');
+        const session = Data.getSession();
+        if (session) {
+            Data.addAuditLog('logout', session.userId, {});
         }
+        
         Data.destroySession();
-        clearRememberMe();
         window.location.href = 'login.html';
     }
 
-    /**
-     * Get current user with full data
-     */
     function getCurrentUser() {
         const session = Data.getSession();
         if (!session) return null;
@@ -293,232 +169,92 @@ const Auth = (function() {
         return Data.getUserById(session.userId);
     }
 
-    /**
-     * Check authentication with role-based access
-     */
-    function checkAuth(requiredRole = null, redirect = true) {
+    function checkAuth(requiredRole = null) {
         const session = Data.getSession();
         
         if (!session) {
-            if (redirect) {
-                window.location.href = 'login.html';
-            }
+            window.location.href = 'login.html';
             return false;
         }
         
         if (requiredRole && session.role !== requiredRole) {
-            if (redirect) {
-                window.location.href = 'dashboard.html';
-            }
+            // Redirect to appropriate dashboard
+            window.location.href = 'dashboard.html';
             return false;
         }
         
         return true;
     }
 
-    /**
-     * Check if user has permission
-     */
-    function hasPermission(permission) {
-        const session = Data.getSession();
-        if (!session) return false;
-        
-        return Data.hasPermission(permission);
-    }
-
-    /**
-     * Change password with validation
-     */
-    async function changePassword(currentPassword, newPassword) {
+    function updateProfile(userId, updates) {
         try {
-            const user = getCurrentUser();
-            if (!user) {
-                return { success: false, message: 'Not authenticated' };
-            }
-
-            Utils.showLoading('Updating password...');
-
-            // Verify current password
-            if (btoa(currentPassword) !== user.password) {
-                Utils.hideLoading();
-                return { success: false, message: 'Current password is incorrect' };
-            }
-
-            // Check new password strength
-            const passwordCheck = Utils.checkPasswordStrength(newPassword);
-            if (!passwordCheck.isValid) {
-                Utils.hideLoading();
-                return {
-                    success: false,
-                    message: 'New password is too weak',
-                    feedback: passwordCheck.feedback
-                };
-            }
-
-            // Update password
-            Data.updateUser(user.id, { password: btoa(newPassword) });
-
-            Utils.hideLoading();
-            Utils.showToast('Password changed successfully!', 'success');
-
-            return { success: true, message: 'Password updated' };
-
-        } catch (error) {
-            Utils.hideLoading();
-            console.error('Password change error:', error);
-            return { success: false, message: 'Failed to change password' };
-        }
-    }
-
-    /**
-     * Request password reset
-     */
-    async function requestPasswordReset(email) {
-        try {
-            Utils.showLoading('Sending reset instructions...');
-
-            const user = Data.getUserByEmail(email);
-            if (!user) {
-                // Don't reveal that user doesn't exist for security
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                Utils.hideLoading();
-                return { 
-                    success: true, 
-                    message: 'If the email exists, reset instructions have been sent.' 
-                };
-            }
-
-            // Generate reset token (in production, save to database)
-            const resetToken = Data.generateId('RST');
+            const updated = Data.updateUser(userId, updates);
             
-            // Send email (simulated)
-            console.log(`Password reset email sent to ${email} with token: ${resetToken}`);
-
-            Utils.hideLoading();
-            return { 
-                success: true, 
-                message: 'Password reset instructions have been sent to your email.' 
-            };
-
-        } catch (error) {
-            Utils.hideLoading();
-            console.error('Password reset error:', error);
-            return { success: false, message: 'Failed to send reset email' };
-        }
-    }
-
-    /**
-     * Reset password with token
-     */
-    async function resetPassword(token, newPassword) {
-        try {
-            // Validate token (in production, check against database)
-            if (!token || token.length < 10) {
-                return { success: false, message: 'Invalid reset token' };
+            if (updated) {
+                Data.addAuditLog('profile_updated', userId, { updates });
+                return { success: true, user: updated };
             }
-
-            Utils.showLoading('Resetting password...');
-
-            // Check password strength
-            const passwordCheck = Utils.checkPasswordStrength(newPassword);
-            if (!passwordCheck.isValid) {
-                Utils.hideLoading();
-                return {
-                    success: false,
-                    message: 'Password is too weak',
-                    feedback: passwordCheck.feedback
-                };
-            }
-
-            // In production, find user by token and update password
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            Utils.hideLoading();
-            Utils.showToast('Password reset successful! Please login.', 'success');
-
-            return { success: true, message: 'Password reset successful' };
-
-        } catch (error) {
-            Utils.hideLoading();
-            console.error('Password reset error:', error);
-            return { success: false, message: 'Failed to reset password' };
-        }
-    }
-
-    /**
-     * Update profile
-     */
-    function updateProfile(updates) {
-        try {
-            const user = getCurrentUser();
-            if (!user) {
-                return { success: false, message: 'Not authenticated' };
-            }
-
-            // Validate email if being updated
-            if (updates.email && updates.email !== user.email) {
-                if (!Utils.isValidEmail(updates.email)) {
-                    return { success: false, message: 'Invalid email format' };
-                }
-                
-                const existingUser = Data.getUserByEmail(updates.email);
-                if (existingUser && existingUser.id !== user.id) {
-                    return { success: false, message: 'Email already in use' };
-                }
-            }
-
-            // Validate phone if being updated
-            if (updates.phone && !Utils.isValidPhone(updates.phone)) {
-                return { success: false, message: 'Invalid phone number' };
-            }
-
-            const updatedUser = Data.updateUser(user.id, updates);
             
-            Utils.showToast('Profile updated successfully!', 'success');
+            return { success: false, message: 'Failed to update profile' };
             
-            return {
-                success: true,
-                message: 'Profile updated',
-                user: updatedUser
-            };
-
         } catch (error) {
             console.error('Profile update error:', error);
-            return { success: false, message: error.message || 'Failed to update profile' };
+            return { success: false, message: 'An error occurred' };
         }
     }
 
-    /**
-     * Get login history
-     */
-    function getLoginHistory() {
-        const user = getCurrentUser();
-        if (!user) return [];
+    function changePassword(userId, currentPassword, newPassword) {
+        const user = Data.getUserById(userId);
         
-        const logs = Data.getAuditLogs({ 
-            userId: user.id,
-            action: 'SESSION_CREATED'
-        });
-        
-        return logs.slice(0, 10); // Last 10 logins
-    }
-
-    /**
-     * Initialize auth - check for remember me
-     */
-    function init() {
-        const rememberedEmail = getRememberedEmail();
-        if (rememberedEmail && window.location.pathname.includes('login.html')) {
-            const emailInput = document.getElementById('email');
-            if (emailInput) {
-                emailInput.value = rememberedEmail;
-                document.getElementById('remember')?.setAttribute('checked', 'checked');
-            }
+        if (!user) {
+            return { success: false, message: 'User not found' };
         }
+        
+        // Verify current password
+        if (btoa(currentPassword) !== user.password) {
+            Data.addAuditLog('password_change_failed', userId, { reason: 'incorrect_current' });
+            return { success: false, message: 'Current password is incorrect' };
+        }
+        
+        // Check new password strength
+        const passwordCheck = Utils.checkPasswordStrength(newPassword);
+        if (!passwordCheck.isValid) {
+            return {
+                success: false,
+                message: 'New password is too weak',
+                feedback: passwordCheck.feedback
+            };
+        }
+        
+        // Update password
+        Data.updateUser(userId, { password: btoa(newPassword) });
+        
+        Data.addAuditLog('password_changed', userId, {});
+        
+        return { success: true, message: 'Password changed successfully' };
     }
 
-    // Initialize
-    init();
+    function requestPasswordReset(email) {
+        const user = Data.getUserByEmail(email);
+        
+        if (!user) {
+            // Don't reveal if email exists or not
+            return { success: true, message: 'If email exists, reset instructions will be sent' };
+        }
+        
+        // Generate reset token (in real app, send email)
+        const resetToken = Math.random().toString(36).substr(2, 10).toUpperCase();
+        
+        Data.addAuditLog('password_reset_requested', user.id, { email });
+        
+        // In real app, send email with reset link
+        console.log(`Password reset token for ${email}: ${resetToken}`);
+        
+        return { 
+            success: true, 
+            message: 'Password reset instructions have been sent to your email.' 
+        };
+    }
 
     // Public API
     return {
@@ -527,14 +263,11 @@ const Auth = (function() {
         logout,
         getCurrentUser,
         checkAuth,
-        hasPermission,
-        changePassword,
-        requestPasswordReset,
-        resetPassword,
         updateProfile,
-        getLoginHistory
+        changePassword,
+        requestPasswordReset
     };
 })();
 
-// Make auth globally available
+// Make Auth globally available
 window.Auth = Auth;
