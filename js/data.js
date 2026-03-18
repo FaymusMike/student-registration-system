@@ -371,7 +371,7 @@ const Data = (function() {
             id: 'STU' + Date.now() + Math.random().toString(36).substr(2, 4).toUpperCase(),
             password: btoa(userData.password),
             role: 'student',
-            status: 'pending',
+            status: 'active', // Changed from 'pending' to 'active'
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email}`,
             createdAt: new Date().toISOString(),
             lastLogin: null
@@ -380,13 +380,13 @@ const Data = (function() {
         users.push(newUser);
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
         
-        // Create notification for admin
+        // Optional: Create notification but skip admin approval
         const admins = users.filter(u => u.role === 'admin');
         admins.forEach(admin => {
             createNotification(
                 admin.id,
                 'new_student',
-                `New student registration: ${newUser.firstName} ${newUser.lastName}`,
+                `New student registered: ${newUser.firstName} ${newUser.lastName}`,
                 { studentId: newUser.id }
             );
         });
